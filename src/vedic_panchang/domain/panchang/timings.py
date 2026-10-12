@@ -14,6 +14,7 @@ _DAY_PERIOD_NAMES = {
     "gulika_kalam": "Gulika Kalam",
 }
 _MINUTES_PER_DAY = 1440.0
+_WEEKDAY_NAMES = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
 
 
 def _interval(id_, name, kind, start_jd, end_jd, to_local: ToLocal) -> TimingInterval:
@@ -62,7 +63,7 @@ def day_timings(
                 "abhijit_muhurta",
                 "Abhijit Muhurta",
                 PeriodKind.AUSPICIOUS,
-                "Not observed on this weekday under the selected tradition",
+                f"Abhijit Muhurta is avoided on {_WEEKDAY_NAMES[weekday]}s",
             )
         )
     else:

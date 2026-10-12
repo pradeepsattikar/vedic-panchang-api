@@ -149,6 +149,23 @@ def test_polar_night_marks_sunrise_values_unavailable(daily):
         assert timing["start"] is None and timing["end"] is None
 
 
+# ── Weekday exceptions (D08) ──────────────────────────────────────────────────────
+
+
+def test_abhijit_muhurta_avoided_on_wednesday(daily):
+    timings = {t["id"]: t for t in daily("2026-10-14", **MUMBAI)["timings"]}  # Wednesday
+    abhijit = timings["abhijit_muhurta"]
+    assert abhijit["applicable"] is False
+    assert abhijit["start"] is None and abhijit["end"] is None
+    assert "Wednesday" in abhijit["reason"]
+    assert timings["rahu_kalam"]["applicable"] is True
+
+
+def test_abhijit_muhurta_present_on_thursday(daily):
+    timings = {t["id"]: t for t in daily("2026-10-15", **MUMBAI)["timings"]}
+    assert timings["abhijit_muhurta"]["applicable"] is True
+
+
 # ── Leap date ────────────────────────────────────────────────────────────────────
 
 

@@ -11,15 +11,15 @@ default_profile = "north-indian-smarta"
 
 [profiles.north-indian-smarta]
 name = "North Indian (Purnimanta), Smarta observance"
-rule_version = "2026.10.0"
+rule_version = "2026.10.1"
 ayanamsha = "lahiri"
 month_system = "purnimanta"
 festival_convention = "smarta"
 day_anchor = "sunrise"
 
-# Weekdays on which Abhijit Muhurta is reported as not applicable. Empty per D08
-# (no weekday exceptions in Phase 1).
-abhijit_excluded_weekdays = []
+# Weekdays on which Abhijit Muhurta is avoided (reported as not applicable).
+# Wednesday: matches Drik Panchang, confirmed by the founder 2026-10-12 (D08).
+abhijit_excluded_weekdays = ["wednesday"]
 
 [profiles.north-indian-smarta.day_periods.rahu_kalam]
 monday = 2
