@@ -1,6 +1,7 @@
 """Public response models (the API data contract). Times are ISO 8601 with UTC offset."""
 
 from datetime import date, datetime
+from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -42,6 +43,7 @@ class ProfileOut(_Model):
     month_system: str
     festival_convention: str
     day_anchor: str
+    festival_set: str
 
 
 class EngineOut(_Model):
@@ -106,6 +108,20 @@ class LunarMonthsOut(_Model):
     purnimanta: MasaOut
 
 
+class FestivalOut(_Model):
+    festival_id: str
+    occurrence_id: str = Field(description="Stable across locations")
+    name: str
+    category: str = Field(description="major | observance")
+    date: Annotated[date, Field(description="Local civil date of observance at this place")]
+    kala: str | None = Field(
+        description="Part of the day in which the Tithi must prevail (lunar festivals)"
+    )
+    tithi: SpanOut | None = Field(None, description="The Tithi with local start and end")
+    masa: LunarMonthsOut | None = None
+    sankranti_time: datetime | None = Field(None, description="Solar festivals: Sun's ingress")
+
+
 class DayWindowOut(_Model):
     basis: str = Field(description="sunrise_to_next_sunrise, or civil_day if no sunrise")
     start: datetime
@@ -155,6 +171,33 @@ class DailyPanchangOut(BaseModel):
     yoga: ElementOut
     karana: ElementOut
     timings: list[TimingOut]
+    observances: list[FestivalOut] = Field(description="Festivals and observances on this date")
+    festival_rule_version: str
+
+
+class FestivalsRequestOut(BaseModel):
+    year: int
+    city_id: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+    timezone: str | None = None
+    profile: str
+    festival_id: str | None = None
+    category: str | None = None
+
+
+class FestivalsOut(BaseModel):
+    request: FestivalsRequestOut
+    year: int
+    location: LocationOut
+    city: CityOut | None
+    profile: ProfileOut
+    festival_rule_version: str
+    engine: EngineOut
+    api_version: str
+    timezone_data_version: str
+    generated_at: datetime
+    festivals: list[FestivalOut]
 
 
 class DateRangeOut(BaseModel):

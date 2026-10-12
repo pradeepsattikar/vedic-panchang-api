@@ -44,14 +44,27 @@ docker run -p 8000:8000 vedic-panchang-api
 |---|---|
 | `GET /v1/panchang/daily?city_id=6167865&date=2026-10-10` | Daily Panchang for a catalogue city |
 | `GET /v1/panchang/daily?lat=19.07&lon=72.88&tz=Asia/Kolkata&date=2026-10-10` | Daily Panchang for any coordinates (`alt` optional, metres) |
+| `GET /v1/festivals?city_id=6167865&year=2026` | Festivals and observances in a year, with local dates (`category=major` to filter) |
+| `GET /v1/festivals/diwali?city_id=6167865&year=2026` | Occurrences of one festival |
 | `GET /v1/cities?q=toronto&country=CA` | Search the city catalogue (case- and accent-insensitive) |
 | `GET /v1/cities/nearest?lat=43.65&lon=-79.38` | Nearest catalogue city to a point |
 | `GET /v1/cities/{city_id}` | One city |
 | `GET /v1/meta` | Versions, profiles, supported date range, catalogue info |
 | `GET /health` | Liveness check |
 
-Optional on daily requests: `profile` (default `north-indian-smarta`). If `date` is
-omitted, the API uses today's date at the requested location.
+Optional on daily and festival requests: `profile` (default `north-indian-smarta`). If
+`date`/`year` is omitted, the API uses today's date at the requested location. Daily
+responses list that day's festivals under `observances`.
+
+### Festivals
+
+Festival rules are data: `src/vedic_panchang/rules/data/festivals/<set>.toml`. A lunar
+festival falls on the local day on which its Tithi prevails during a given part of the day
+(`kala`: sunrise, purvahna, madhyahna, aparahna, pradosh, nishita, moonrise, ...), with a
+tie-break when it prevails on two days and Bhadra avoidance where tradition requires it
+(e.g. Raksha Bandhan). Yearly festivals are observed in regular (Nija) months, not Adhika
+months. Because local sunrise and sunset matter, a festival can correctly fall on different
+dates in different cities; `occurrence_id` stays the same everywhere.
 
 ### Example (abridged)
 

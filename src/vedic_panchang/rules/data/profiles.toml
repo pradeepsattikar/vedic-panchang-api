@@ -16,6 +16,7 @@ ayanamsha = "lahiri"
 month_system = "purnimanta"
 festival_convention = "smarta"
 day_anchor = "sunrise"
+festival_set = "north-indian-smarta"  # rules/data/festivals/<set>.toml
 
 # Weekdays on which Abhijit Muhurta is avoided (reported as not applicable).
 # Wednesday: matches Drik Panchang, confirmed by the founder 2026-10-12 (D08).

@@ -1,4 +1,4 @@
-"""Use cases for daily Panchang and the city catalogue."""
+"""Use cases: daily Panchang, festivals and the city catalogue."""
 
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
@@ -7,6 +7,7 @@ from functools import lru_cache
 from vedic_panchang import __version__
 from vedic_panchang.astronomy.ephemeris import ENGINE_INFO, EngineInfo
 from vedic_panchang.config import Settings
+from vedic_panchang.domain.festivals.engine import FestivalOccurrence, festivals_for_year
 from vedic_panchang.domain.location import (
     TIMEZONE_DATA_VERSION,
     InvalidLocationError,
@@ -15,6 +16,7 @@ from vedic_panchang.domain.location import (
 from vedic_panchang.domain.panchang.calculator import calculate_daily_panchang
 from vedic_panchang.domain.panchang.models import DailyPanchang
 from vedic_panchang.infra.city_repository import City, CityRepository
+from vedic_panchang.rules.festivals import FestivalSet, load_festival_set
 from vedic_panchang.rules.profiles import (
     CalculationProfile,
     ProfileRegistry,
@@ -25,17 +27,17 @@ from vedic_panchang.rules.profiles import (
 __all__ = [
     "CityNotFoundError",
     "DateOutOfRangeError",
+    "FestivalNotFoundError",
     "InvalidLocationError",
+    "LocationRequestError",
     "PanchangService",
     "UnknownProfileError",
 ]
 
 
 class DateOutOfRangeError(ValueError):
-    def __init__(self, requested: date, min_date: date, max_date: date):
-        super().__init__(
-            f"Date {requested} is outside the supported range {min_date} to {max_date}"
-        )
+    def __init__(self, requested: date | int, min_date: date, max_date: date):
+        super().__init__(f"{requested} is outside the supported range {min_date} to {max_date}")
         self.min_date = min_date
         self.max_date = max_date
 
@@ -46,16 +48,46 @@ class CityNotFoundError(LookupError):
         self.city_id = city_id
 
 
+class FestivalNotFoundError(LookupError):
+    def __init__(self, festival_id: str):
+        super().__init__(f"No festival with id '{festival_id}'")
+
+
+class LocationRequestError(ValueError):
+    """Neither a city nor a complete set of coordinates, or both, were given."""
+
+
 @dataclass(frozen=True)
-class PanchangResult:
-    panchang: DailyPanchang
+class Place:
     location: Location
     city: City | None
+    request: dict  # how the caller identified the place, echoed back in responses
+
+
+@dataclass(frozen=True)
+class Provenance:
     profile: CalculationProfile
+    festival_set: FestivalSet
     engine: EngineInfo
     api_version: str
     timezone_data_version: str
     generated_at: datetime
+
+
+@dataclass(frozen=True)
+class PanchangResult:
+    place: Place
+    panchang: DailyPanchang
+    observances: tuple[FestivalOccurrence, ...]
+    provenance: Provenance
+
+
+@dataclass(frozen=True)
+class FestivalsResult:
+    place: Place
+    year: int
+    festivals: tuple[FestivalOccurrence, ...]
+    provenance: Provenance
 
 
 class PanchangService:
@@ -67,47 +99,88 @@ class PanchangService:
         self.settings = settings
         self.cities = cities
         self.profiles = profiles
-        # Results are pure functions of (date, location, profile); the profile carries its
-        # rule_version, so the cache key covers date + location + rule version.
+        # Pure functions of their arguments; profiles and festival sets carry their rule
+        # versions, so cache keys cover date/year + location + rule version.
         self._calculate = lru_cache(maxsize=settings.cache_size)(calculate_daily_panchang)
+        self._festivals = lru_cache(maxsize=256)(festivals_for_year)
 
+    # ── locations ────────────────────────────────────────────
     def city(self, city_id: str) -> City:
         city = self.cities.get(city_id)
         if city is None:
             raise CityNotFoundError(city_id)
         return city
 
-    def daily_for_city(
-        self, city_id: str, day: date | None, profile_id: str | None
-    ) -> PanchangResult:
-        city = self.city(city_id)
-        return self._daily(city.location, city, day, profile_id)
-
-    def daily_for_coordinates(
+    def place(
         self,
-        latitude: float,
-        longitude: float,
-        timezone: str,
-        altitude_m: float,
-        day: date | None,
-        profile_id: str | None,
-    ) -> PanchangResult:
-        location = Location(latitude, longitude, timezone, altitude_m)
-        return self._daily(location, None, day, profile_id)
+        city_id: str | None,
+        latitude: float | None,
+        longitude: float | None,
+        timezone: str | None,
+        altitude_m: float = 0.0,
+    ) -> Place:
+        coordinates = (latitude, longitude, timezone)
+        if city_id is not None:
+            if any(v is not None for v in coordinates):
+                raise LocationRequestError("Give either city_id or lat/lon/tz, not both")
+            city = self.city(city_id)
+            return Place(city.location, city, {"city_id": city_id})
+        if all(v is not None for v in coordinates):
+            location = Location(latitude, longitude, timezone, altitude_m)
+            request = {"latitude": latitude, "longitude": longitude, "timezone": timezone}
+            return Place(location, None, request)
+        raise LocationRequestError("Give either city_id, or all of lat, lon and tz")
 
-    def _daily(
-        self, location: Location, city: City | None, day: date | None, profile_id: str | None
-    ) -> PanchangResult:
+    # ── use cases ────────────────────────────────────────────
+    def daily(self, place: Place, day: date | None, profile_id: str | None) -> PanchangResult:
         profile = self.profiles.get(profile_id)
         # "Today" is the civil date at the requested location, not on the server.
-        day = day or datetime.now(location.tz).date()
+        day = day or datetime.now(place.location.tz).date()
+        self._check_date(day)
+        festival_set = load_festival_set(profile.festival_set)
+        year = self._festivals(day.year, place.location, profile, festival_set)
+        return PanchangResult(
+            place=place,
+            panchang=self._calculate(day, place.location, profile),
+            observances=tuple(o for o in year if o.date == day),
+            provenance=self._provenance(profile, festival_set),
+        )
+
+    def festivals(
+        self,
+        place: Place,
+        year: int | None,
+        profile_id: str | None,
+        festival_id: str | None = None,
+        category: str | None = None,
+    ) -> FestivalsResult:
+        profile = self.profiles.get(profile_id)
+        year = year or datetime.now(place.location.tz).year
+        if not self.settings.min_date.year <= year <= self.settings.max_date.year:
+            raise DateOutOfRangeError(year, self.settings.min_date, self.settings.max_date)
+        festival_set = load_festival_set(profile.festival_set)
+        if festival_id is not None and festival_id not in {
+            r.id for r in festival_set.lunar + festival_set.solar
+        }:
+            raise FestivalNotFoundError(festival_id)
+        occurrences = self._festivals(year, place.location, profile, festival_set)
+        selected = tuple(
+            o
+            for o in occurrences
+            if (festival_id is None or o.festival_id == festival_id)
+            and (category is None or o.category == category)
+            and self.settings.min_date <= o.date <= self.settings.max_date
+        )
+        return FestivalsResult(place, year, selected, self._provenance(profile, festival_set))
+
+    def _check_date(self, day: date) -> None:
         if not self.settings.min_date <= day <= self.settings.max_date:
             raise DateOutOfRangeError(day, self.settings.min_date, self.settings.max_date)
-        return PanchangResult(
-            panchang=self._calculate(day, location, profile),
-            location=location,
-            city=city,
+
+    def _provenance(self, profile: CalculationProfile, festival_set: FestivalSet) -> Provenance:
+        return Provenance(
             profile=profile,
+            festival_set=festival_set,
             engine=self.engine,
             api_version=self.api_version,
             timezone_data_version=self.timezone_data_version,

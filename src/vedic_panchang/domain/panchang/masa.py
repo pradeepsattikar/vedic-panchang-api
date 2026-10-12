@@ -39,7 +39,14 @@ class LunarMonths:
     purnimanta: Masa
 
 
-def _masa(index: int, is_adhika: bool) -> Masa:
+def amanta_month_index(sign_at_start: int, sign_at_end: int) -> tuple[int, bool]:
+    """(month index 0-11, is_adhika) from the Sun's sidereal sign at the month's two new moons."""
+    if sign_at_start == sign_at_end:
+        return (sign_at_end + 1) % 12, True
+    return sign_at_end, False
+
+
+def masa(index: int, is_adhika: bool) -> Masa:
     name = MASAS[index]
     prefix = "adhika-" if is_adhika else ""
     return Masa(index + 1, prefix + name.lower(), name, is_adhika)
@@ -59,11 +66,10 @@ def _amanta_month(elongation, sun_longitude, jd: float) -> tuple[int, bool, floa
     """(month index 0-11, is_adhika, end of month JD) for the Amanta month containing jd."""
     start = _new_moon_before(elongation, jd)
     end = crossing_near(elongation, 0.0, start + SYNODIC_MONTH_DAYS, _MEAN_ELONGATION_SPEED)
-    sign_at_start = int(sun_longitude(start) // 30)
-    sign_at_end = int(sun_longitude(end) // 30)
-    if sign_at_start == sign_at_end:
-        return (sign_at_end + 1) % 12, True, end
-    return sign_at_end, False, end
+    index, is_adhika = amanta_month_index(
+        int(sun_longitude(start) // 30), int(sun_longitude(end) // 30)
+    )
+    return index, is_adhika, end
 
 
 def lunar_months(
@@ -73,8 +79,8 @@ def lunar_months(
 ) -> LunarMonths:
     """Lunar months in force at ``jd`` (normally the Panchang day's sunrise)."""
     index, is_adhika, month_end = _amanta_month(elongation, sun_longitude, jd)
-    amanta = _masa(index, is_adhika)
+    amanta = masa(index, is_adhika)
     if elongation(jd) < 180.0:  # Shukla paksha: both systems agree
         return LunarMonths(amanta, amanta)
     next_index, next_adhika, _ = _amanta_month(elongation, sun_longitude, month_end + 1.0)
-    return LunarMonths(amanta, _masa(next_index, next_adhika))
+    return LunarMonths(amanta, masa(next_index, next_adhika))

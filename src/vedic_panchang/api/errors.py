@@ -13,15 +13,13 @@ from fastapi.responses import JSONResponse
 from vedic_panchang.services.panchang_service import (
     CityNotFoundError,
     DateOutOfRangeError,
+    FestivalNotFoundError,
     InvalidLocationError,
+    LocationRequestError,
     UnknownProfileError,
 )
 
 logger = logging.getLogger(__name__)
-
-
-class BadRequestError(ValueError):
-    """Request parameters are individually valid but inconsistent with each other."""
 
 
 def _error(request: Request, status: int, code: str, message: str, details=None):
@@ -50,8 +48,12 @@ def register_error_handlers(app: FastAPI) -> None:
     async def _location(request: Request, exc: InvalidLocationError):
         return _error(request, 422, "invalid_location", str(exc))
 
-    @app.exception_handler(BadRequestError)
-    async def _bad_request(request: Request, exc: BadRequestError):
+    @app.exception_handler(FestivalNotFoundError)
+    async def _festival(request: Request, exc: FestivalNotFoundError):
+        return _error(request, 404, "festival_not_found", str(exc))
+
+    @app.exception_handler(LocationRequestError)
+    async def _location_request(request: Request, exc: LocationRequestError):
         return _error(request, 422, "invalid_request", str(exc))
 
     @app.exception_handler(RequestValidationError)

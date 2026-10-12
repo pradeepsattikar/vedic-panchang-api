@@ -27,6 +27,7 @@ class CalculationProfile:
     month_system: str
     festival_convention: str
     day_anchor: str
+    festival_set: str
     abhijit_excluded_weekdays: frozenset[int]
     # period id -> 7-tuple of 1-based day parts, indexed by Python weekday (Monday = 0)
     day_periods: tuple[tuple[str, tuple[int, ...]], ...]
@@ -53,6 +54,7 @@ def _parse(profile_id: str, raw: dict) -> CalculationProfile:
         month_system=raw["month_system"],
         festival_convention=raw["festival_convention"],
         day_anchor=raw["day_anchor"],
+        festival_set=raw["festival_set"],
         abhijit_excluded_weekdays=frozenset(
             WEEKDAYS.index(day) for day in raw.get("abhijit_excluded_weekdays", [])
         ),

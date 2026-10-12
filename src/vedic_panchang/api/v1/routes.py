@@ -1,11 +1,10 @@
 from datetime import date
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, Query, Request
 
-from vedic_panchang.api.errors import BadRequestError
 from vedic_panchang.api.v1 import schemas
-from vedic_panchang.services.panchang_service import PanchangResult, PanchangService
+from vedic_panchang.services.panchang_service import PanchangService, Place, Provenance
 
 router = APIRouter(prefix="/v1")
 
@@ -20,63 +19,119 @@ def get_service(request: Request) -> PanchangService:
 Service = Annotated[PanchangService, Depends(get_service)]
 
 
-def _to_response(result: PanchangResult, request_ctx: dict) -> schemas.DailyPanchangOut:
-    p = result.panchang
-    validate = schemas.CelestialEventOut.model_validate
-    return schemas.DailyPanchangOut(
-        request=schemas.RequestContextOut(**request_ctx, date=p.date, profile=result.profile.id),
-        date=p.date,
-        location=schemas.LocationOut.model_validate(result.location),
-        city=schemas.CityOut.model_validate(result.city) if result.city else None,
-        profile=schemas.ProfileOut.model_validate(result.profile),
-        engine=schemas.EngineOut.model_validate(result.engine),
-        api_version=result.api_version,
-        timezone_data_version=result.timezone_data_version,
-        generated_at=result.generated_at,
-        vara=schemas.VaraOut.model_validate(p.vara),
-        masa=schemas.LunarMonthsOut.model_validate(p.masa),
-        day_window=schemas.DayWindowOut.model_validate(p.day_window),
-        sun=schemas.SunOut(sunrise=validate(p.sunrise), sunset=validate(p.sunset)),
-        moon=schemas.MoonOut(moonrise=validate(p.moonrise), moonset=validate(p.moonset)),
-        tithi=schemas.ElementOut.model_validate(p.tithi),
-        nakshatra=schemas.ElementOut.model_validate(p.nakshatra),
-        yoga=schemas.ElementOut.model_validate(p.yoga),
-        karana=schemas.ElementOut.model_validate(p.karana),
-        timings=[schemas.TimingOut.model_validate(t) for t in p.timings],
-    )
-
-
-@router.get("/panchang/daily", response_model=schemas.DailyPanchangOut, tags=["panchang"])
-def daily_panchang(
+def get_place(
     service: Service,
-    date_: Annotated[
-        date | None,
-        Query(alias="date", description="Local civil date (YYYY-MM-DD). Default: today there"),
-    ] = None,
     city_id: Annotated[str | None, Query(description="City ID from /v1/cities")] = None,
     lat: Annotated[float | None, Query(ge=-90, le=90)] = None,
     lon: Annotated[float | None, Query(ge=-180, le=180)] = None,
     tz: Annotated[str | None, Query(description="IANA timezone, e.g. Asia/Kolkata")] = None,
     alt: Annotated[float, Query(description="Altitude in metres")] = 0.0,
-    profile: Annotated[str | None, Query(description="Calculation profile ID")] = None,
+) -> Place:
+    """A catalogue city (`city_id`) or any coordinates (`lat`, `lon`, `tz`)."""
+    return service.place(city_id, lat, lon, tz, alt)
+
+
+PlaceParam = Annotated[Place, Depends(get_place)]
+ProfileParam = Annotated[str | None, Query(description="Calculation profile ID")]
+
+
+def _context(place: Place, provenance: Provenance) -> dict:
+    return {
+        "location": schemas.LocationOut.model_validate(place.location),
+        "city": schemas.CityOut.model_validate(place.city) if place.city else None,
+        "profile": schemas.ProfileOut.model_validate(provenance.profile),
+        "festival_rule_version": provenance.festival_set.rule_version,
+        "engine": schemas.EngineOut.model_validate(provenance.engine),
+        "api_version": provenance.api_version,
+        "timezone_data_version": provenance.timezone_data_version,
+        "generated_at": provenance.generated_at,
+    }
+
+
+@router.get("/panchang/daily", response_model=schemas.DailyPanchangOut, tags=["panchang"])
+def daily_panchang(
+    service: Service,
+    place: PlaceParam,
+    date_: Annotated[
+        date | None,
+        Query(alias="date", description="Local civil date (YYYY-MM-DD). Default: today there"),
+    ] = None,
+    profile: ProfileParam = None,
 ):
-    """Daily Panchang for a catalogue city (`city_id`) or any coordinates (`lat`, `lon`, `tz`).
+    """Daily Panchang for a catalogue city or any coordinates.
 
     Element values are anchored at local sunrise; every span overlapping the Panchang day
-    (sunrise to next sunrise) is listed with start and end times.
+    (sunrise to next sunrise) is listed with start and end times. Festivals and
+    observances falling on the date are listed under `observances`.
     """
-    coordinates = (lat, lon, tz)
-    if city_id is not None:
-        if any(v is not None for v in coordinates):
-            raise BadRequestError("Give either city_id or lat/lon/tz, not both")
-        result = service.daily_for_city(city_id, date_, profile)
-        ctx = {"city_id": city_id}
-    elif all(v is not None for v in coordinates):
-        result = service.daily_for_coordinates(lat, lon, tz, alt, date_, profile)
-        ctx = {"latitude": lat, "longitude": lon, "timezone": tz}
-    else:
-        raise BadRequestError("Give either city_id, or all of lat, lon and tz")
-    return _to_response(result, ctx)
+    result = service.daily(place, date_, profile)
+    p = result.panchang
+    event = schemas.CelestialEventOut.model_validate
+    return schemas.DailyPanchangOut(
+        request=schemas.RequestContextOut(
+            **place.request, date=p.date, profile=result.provenance.profile.id
+        ),
+        date=p.date,
+        **_context(place, result.provenance),
+        vara=schemas.VaraOut.model_validate(p.vara),
+        masa=schemas.LunarMonthsOut.model_validate(p.masa),
+        day_window=schemas.DayWindowOut.model_validate(p.day_window),
+        sun=schemas.SunOut(sunrise=event(p.sunrise), sunset=event(p.sunset)),
+        moon=schemas.MoonOut(moonrise=event(p.moonrise), moonset=event(p.moonset)),
+        tithi=schemas.ElementOut.model_validate(p.tithi),
+        nakshatra=schemas.ElementOut.model_validate(p.nakshatra),
+        yoga=schemas.ElementOut.model_validate(p.yoga),
+        karana=schemas.ElementOut.model_validate(p.karana),
+        timings=[schemas.TimingOut.model_validate(t) for t in p.timings],
+        observances=[schemas.FestivalOut.model_validate(o) for o in result.observances],
+    )
+
+
+def _festivals_response(service, place, year, profile, festival_id=None, category=None):
+    result = service.festivals(place, year, profile, festival_id, category)
+    return schemas.FestivalsOut(
+        request=schemas.FestivalsRequestOut(
+            **place.request,
+            year=result.year,
+            profile=result.provenance.profile.id,
+            festival_id=festival_id,
+            category=category,
+        ),
+        year=result.year,
+        **_context(place, result.provenance),
+        festivals=[schemas.FestivalOut.model_validate(o) for o in result.festivals],
+    )
+
+
+YearParam = Annotated[int | None, Query(description="Gregorian year. Default: current year")]
+
+
+@router.get("/festivals", response_model=schemas.FestivalsOut, tags=["festivals"])
+def festivals(
+    service: Service,
+    place: PlaceParam,
+    year: YearParam = None,
+    category: Annotated[Literal["major", "observance"] | None, Query()] = None,
+    profile: ProfileParam = None,
+):
+    """Festivals and observances in a year, with their local dates at this place.
+
+    Dates can correctly differ between places: each festival falls on the local day on
+    which its Tithi prevails during the required part of the day (`kala`).
+    """
+    return _festivals_response(service, place, year, profile, category=category)
+
+
+@router.get("/festivals/{festival_id}", response_model=schemas.FestivalsOut, tags=["festivals"])
+def festival(
+    service: Service,
+    place: PlaceParam,
+    festival_id: str,
+    year: YearParam = None,
+    profile: ProfileParam = None,
+):
+    """Occurrences of one festival in a year (monthly observances occur several times)."""
+    return _festivals_response(service, place, year, profile, festival_id=festival_id)
 
 
 @router.get("/cities", response_model=list[schemas.CityOut], tags=["cities"])

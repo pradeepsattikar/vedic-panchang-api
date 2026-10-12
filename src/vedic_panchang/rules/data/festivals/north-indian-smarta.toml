@@ -1,0 +1,543 @@
+# Festival rules: North Indian (Purnimanta display), Smarta observance.
+#
+# Months are AMANTA (new moon to new moon). For Krishna-paksha dates the North Indian
+# (Purnimanta) name is the following month: e.g. Diwali is "Kartika Amavasya" in the North
+# but amanta_month = "ashwin" here.
+# tithi: 1-15 Shukla (15 = Purnima), 16-30 Krishna (30 = Amavasya).
+# kala: part of the day the Tithi must prevail in (see rules/festivals.py).
+# tie: day chosen when the Tithi prevails in the kala on two days. Defaults: "first" for
+#      sunrise/moonrise, "max_coverage" otherwise.
+# If the Tithi prevails in the kala on neither day, the day it prevails at sunrise is used.
+# avoid_bhadra: time under Bhadra (Vishti karana) does not count towards the kala.
+#
+# Any change here MUST bump rule_version.
+
+rule_version = "2026.10.1"
+
+# ── Major festivals ────────────────────────────────────────────────────────────
+
+[[solar]]
+id = "makar-sankranti"
+name = "Makar Sankranti"
+category = "major"
+sign = "makara"
+
+[[lunar]]
+id = "vasant-panchami"
+name = "Vasant Panchami"
+category = "major"
+amanta_month = "magha"
+tithi = 5
+kala = "purvahna"
+
+[[lunar]]
+id = "maha-shivaratri"
+name = "Maha Shivaratri"
+category = "major"
+amanta_month = "magha"
+tithi = 29
+kala = "nishita"
+
+[[lunar]]
+id = "holika-dahan"
+name = "Holika Dahan"
+category = "major"
+amanta_month = "phalguna"
+tithi = 15
+kala = "pradosh"  # on the Purnima evening; if Bhadra prevails, performed after it ends
+
+[[lunar]]
+id = "holi"
+name = "Holi"
+category = "major"
+amanta_month = "phalguna"
+tithi = 16  # Chaitra Krishna Pratipada (Purnimanta)
+kala = "aparahna"
+
+[[lunar]]
+id = "chaitra-navratri"
+name = "Chaitra Navratri begins · Gudi Padwa · Ugadi"
+category = "major"
+amanta_month = "chaitra"
+tithi = 1
+kala = "sunrise"
+
+[[lunar]]
+id = "ram-navami"
+name = "Ram Navami"
+category = "major"
+amanta_month = "chaitra"
+tithi = 9
+kala = "madhyahna"
+
+[[lunar]]
+id = "hanuman-jayanti"
+name = "Hanuman Jayanti"
+category = "major"
+amanta_month = "chaitra"
+tithi = 15
+kala = "sunrise"
+
+[[lunar]]
+id = "akshaya-tritiya"
+name = "Akshaya Tritiya"
+category = "major"
+amanta_month = "vaishakha"
+tithi = 3
+kala = "purvahna"
+
+[[lunar]]
+id = "vat-savitri-vrat"
+name = "Vat Savitri Vrat"
+category = "major"
+amanta_month = "vaishakha"
+tithi = 30
+kala = "sunrise"
+
+[[lunar]]
+id = "guru-purnima"
+name = "Guru Purnima"
+category = "major"
+amanta_month = "ashadha"
+tithi = 15
+kala = "sunrise"
+
+[[lunar]]
+id = "hariyali-teej"
+name = "Hariyali Teej"
+category = "major"
+amanta_month = "shravana"
+tithi = 3
+kala = "sunrise"
+
+[[lunar]]
+id = "nag-panchami"
+name = "Nag Panchami"
+category = "major"
+amanta_month = "shravana"
+tithi = 5
+kala = "sunrise"
+
+[[lunar]]
+id = "raksha-bandhan"
+name = "Raksha Bandhan"
+category = "major"
+amanta_month = "shravana"
+tithi = 15
+kala = "aparahna"
+avoid_bhadra = true
+
+[[lunar]]
+id = "krishna-janmashtami"
+name = "Krishna Janmashtami"
+category = "major"
+amanta_month = "shravana"
+tithi = 23
+kala = "nishita"
+
+[[lunar]]
+id = "hartalika-teej"
+name = "Hartalika Teej"
+category = "major"
+amanta_month = "bhadrapada"
+tithi = 3
+kala = "sunrise"
+
+[[lunar]]
+id = "ganesh-chaturthi"
+name = "Ganesh Chaturthi"
+category = "major"
+amanta_month = "bhadrapada"
+tithi = 4
+kala = "madhyahna"
+
+[[lunar]]
+id = "anant-chaturdashi"
+name = "Anant Chaturdashi"
+category = "major"
+amanta_month = "bhadrapada"
+tithi = 14
+kala = "sunrise"
+
+[[lunar]]
+id = "pitru-paksha-begins"
+name = "Pitru Paksha begins"
+category = "major"
+amanta_month = "bhadrapada"
+tithi = 16
+kala = "aparahna"
+
+[[lunar]]
+id = "sarva-pitru-amavasya"
+name = "Sarva Pitru Amavasya"
+category = "major"
+amanta_month = "bhadrapada"
+tithi = 30
+kala = "aparahna"
+
+[[lunar]]
+id = "sharad-navratri"
+name = "Sharad Navratri begins"
+category = "major"
+amanta_month = "ashwin"
+tithi = 1
+kala = "sunrise"
+
+[[lunar]]
+id = "durga-ashtami"
+name = "Durga Ashtami"
+category = "major"
+amanta_month = "ashwin"
+tithi = 8
+kala = "sunrise"
+
+[[lunar]]
+id = "maha-navami"
+name = "Maha Navami"
+category = "major"
+amanta_month = "ashwin"
+tithi = 9
+kala = "sunrise"
+
+[[lunar]]
+id = "dussehra"
+name = "Dussehra (Vijayadashami)"
+category = "major"
+amanta_month = "ashwin"
+tithi = 10
+kala = "aparahna"
+
+[[lunar]]
+id = "sharad-purnima"
+name = "Sharad Purnima"
+category = "major"
+amanta_month = "ashwin"
+tithi = 15
+kala = "moonrise"
+
+[[lunar]]
+id = "karwa-chauth"
+name = "Karwa Chauth"
+category = "major"
+amanta_month = "ashwin"
+tithi = 19
+kala = "moonrise"
+
+[[lunar]]
+id = "ahoi-ashtami"
+name = "Ahoi Ashtami"
+category = "major"
+amanta_month = "ashwin"
+tithi = 23
+kala = "pradosh"
+
+[[lunar]]
+id = "dhanteras"
+name = "Dhanteras"
+category = "major"
+amanta_month = "ashwin"
+tithi = 28
+kala = "pradosh"
+
+[[lunar]]
+id = "naraka-chaturdashi"
+name = "Naraka Chaturdashi (Choti Diwali)"
+category = "major"
+amanta_month = "ashwin"
+tithi = 29
+kala = "arunodaya"
+
+[[lunar]]
+id = "diwali"
+name = "Diwali (Lakshmi Puja)"
+category = "major"
+amanta_month = "ashwin"
+tithi = 30
+kala = "pradosh"
+
+[[lunar]]
+id = "govardhan-puja"
+name = "Govardhan Puja"
+category = "major"
+amanta_month = "kartika"
+tithi = 1
+kala = "aparahna"  # avoids the day the Dwitiya moon is seen
+
+[[lunar]]
+id = "bhai-dooj"
+name = "Bhai Dooj"
+category = "major"
+amanta_month = "kartika"
+tithi = 2
+kala = "aparahna"
+
+[[lunar]]
+id = "chhath-puja"
+name = "Chhath Puja"
+category = "major"
+amanta_month = "kartika"
+tithi = 6
+kala = "sunset"
+
+[[lunar]]
+id = "kartik-purnima"
+name = "Kartik Purnima (Dev Deepawali)"
+category = "major"
+amanta_month = "kartika"
+tithi = 15
+kala = "sunrise"
+
+[[lunar]]
+id = "gita-jayanti"
+name = "Gita Jayanti"
+category = "major"
+amanta_month = "margashirsha"
+tithi = 11
+kala = "sunrise"
+
+# ── Ekadashi (Smarta: Ekadashi at sunrise; on two sunrises, the first day) ───────
+
+[[lunar]]
+id = "kamada-ekadashi"
+name = "Kamada Ekadashi"
+amanta_month = "chaitra"
+tithi = 11
+kala = "sunrise"
+
+[[lunar]]
+id = "varuthini-ekadashi"
+name = "Varuthini Ekadashi"
+amanta_month = "chaitra"
+tithi = 26
+kala = "sunrise"
+
+[[lunar]]
+id = "mohini-ekadashi"
+name = "Mohini Ekadashi"
+amanta_month = "vaishakha"
+tithi = 11
+kala = "sunrise"
+
+[[lunar]]
+id = "apara-ekadashi"
+name = "Apara Ekadashi"
+amanta_month = "vaishakha"
+tithi = 26
+kala = "sunrise"
+
+[[lunar]]
+id = "nirjala-ekadashi"
+name = "Nirjala Ekadashi"
+category = "major"
+amanta_month = "jyeshtha"
+tithi = 11
+kala = "sunrise"
+
+[[lunar]]
+id = "yogini-ekadashi"
+name = "Yogini Ekadashi"
+amanta_month = "jyeshtha"
+tithi = 26
+kala = "sunrise"
+
+[[lunar]]
+id = "devshayani-ekadashi"
+name = "Devshayani Ekadashi"
+category = "major"
+amanta_month = "ashadha"
+tithi = 11
+kala = "sunrise"
+
+[[lunar]]
+id = "kamika-ekadashi"
+name = "Kamika Ekadashi"
+amanta_month = "ashadha"
+tithi = 26
+kala = "sunrise"
+
+[[lunar]]
+id = "shravana-putrada-ekadashi"
+name = "Shravana Putrada Ekadashi"
+amanta_month = "shravana"
+tithi = 11
+kala = "sunrise"
+
+[[lunar]]
+id = "aja-ekadashi"
+name = "Aja Ekadashi"
+amanta_month = "shravana"
+tithi = 26
+kala = "sunrise"
+
+[[lunar]]
+id = "parsva-ekadashi"
+name = "Parsva Ekadashi"
+amanta_month = "bhadrapada"
+tithi = 11
+kala = "sunrise"
+
+[[lunar]]
+id = "indira-ekadashi"
+name = "Indira Ekadashi"
+amanta_month = "bhadrapada"
+tithi = 26
+kala = "sunrise"
+
+[[lunar]]
+id = "papankusha-ekadashi"
+name = "Papankusha Ekadashi"
+amanta_month = "ashwin"
+tithi = 11
+kala = "sunrise"
+
+[[lunar]]
+id = "rama-ekadashi"
+name = "Rama Ekadashi"
+amanta_month = "ashwin"
+tithi = 26
+kala = "sunrise"
+
+[[lunar]]
+id = "dev-uthani-ekadashi"
+name = "Dev Uthani Ekadashi"
+category = "major"
+amanta_month = "kartika"
+tithi = 11
+kala = "sunrise"
+
+[[lunar]]
+id = "utpanna-ekadashi"
+name = "Utpanna Ekadashi"
+amanta_month = "kartika"
+tithi = 26
+kala = "sunrise"
+
+[[lunar]]
+id = "mokshada-ekadashi"
+name = "Mokshada Ekadashi"
+amanta_month = "margashirsha"
+tithi = 11
+kala = "sunrise"
+
+[[lunar]]
+id = "saphala-ekadashi"
+name = "Saphala Ekadashi"
+amanta_month = "margashirsha"
+tithi = 26
+kala = "sunrise"
+
+[[lunar]]
+id = "pausha-putrada-ekadashi"
+name = "Pausha Putrada Ekadashi"
+amanta_month = "pausha"
+tithi = 11
+kala = "sunrise"
+
+[[lunar]]
+id = "shattila-ekadashi"
+name = "Shattila Ekadashi"
+amanta_month = "pausha"
+tithi = 26
+kala = "sunrise"
+
+[[lunar]]
+id = "jaya-ekadashi"
+name = "Jaya Ekadashi"
+amanta_month = "magha"
+tithi = 11
+kala = "sunrise"
+
+[[lunar]]
+id = "vijaya-ekadashi"
+name = "Vijaya Ekadashi"
+amanta_month = "magha"
+tithi = 26
+kala = "sunrise"
+
+[[lunar]]
+id = "amalaki-ekadashi"
+name = "Amalaki Ekadashi"
+amanta_month = "phalguna"
+tithi = 11
+kala = "sunrise"
+
+[[lunar]]
+id = "papmochani-ekadashi"
+name = "Papmochani Ekadashi"
+amanta_month = "phalguna"
+tithi = 26
+kala = "sunrise"
+
+[[lunar]]
+id = "padmini-ekadashi"
+name = "Padmini Ekadashi"
+amanta_month = "any"
+adhika = "only"
+tithi = 11
+kala = "sunrise"
+
+[[lunar]]
+id = "parama-ekadashi"
+name = "Parama Ekadashi"
+amanta_month = "any"
+adhika = "only"
+tithi = 26
+kala = "sunrise"
+
+# ── Monthly observances ────────────────────────────────────────────────────────
+
+[[lunar]]
+id = "purnima"
+name = "{masa} Purnima"
+amanta_month = "any"
+tithi = 15
+kala = "sunrise"
+
+[[lunar]]
+id = "amavasya"
+name = "{masa} Amavasya"
+amanta_month = "any"
+tithi = 30
+kala = "sunrise"
+
+[[lunar]]
+id = "sankashti-chaturthi"
+name = "Sankashti Chaturthi"
+amanta_month = "any"
+tithi = 19
+kala = "moonrise"
+
+[[lunar]]
+id = "vinayaka-chaturthi"
+name = "Vinayaka Chaturthi"
+amanta_month = "any"
+tithi = 4
+kala = "madhyahna"
+skip_months = ["bhadrapada"]  # that day is Ganesh Chaturthi
+
+[[lunar]]
+id = "shukla-pradosh"
+name = "Pradosh Vrat (Shukla)"
+amanta_month = "any"
+tithi = 13
+kala = "pradosh"
+
+[[lunar]]
+id = "krishna-pradosh"
+name = "Pradosh Vrat (Krishna)"
+amanta_month = "any"
+tithi = 28
+kala = "pradosh"
+
+[[lunar]]
+id = "masik-shivaratri"
+name = "Masik Shivaratri"
+amanta_month = "any"
+tithi = 29
+kala = "nishita"
+skip_months = ["magha"]  # that night is Maha Shivaratri
+
+[[solar]]
+id = "sankranti"
+name = "{sign} Sankranti"
+sign = "any"
