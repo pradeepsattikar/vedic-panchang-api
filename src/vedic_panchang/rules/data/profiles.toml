@@ -1,0 +1,49 @@
+# Calculation profiles.
+#
+# A profile bundles every convention that can differ between traditions. Changing any
+# value here MUST bump `rule_version`, because cached results and API responses are keyed
+# and labelled by it.
+#
+# Day-period tables: the daytime (sunrise -> sunset) is split into 8 equal parts; the
+# number is the 1-based part for that weekday. Verified against Drik Panchang (2026-10-10).
+
+default_profile = "north-indian-smarta"
+
+[profiles.north-indian-smarta]
+name = "North Indian (Purnimanta), Smarta observance"
+rule_version = "2026.10.0"
+ayanamsha = "lahiri"
+month_system = "purnimanta"
+festival_convention = "smarta"
+day_anchor = "sunrise"
+
+# Weekdays on which Abhijit Muhurta is reported as not applicable. Empty per D08
+# (no weekday exceptions in Phase 1).
+abhijit_excluded_weekdays = []
+
+[profiles.north-indian-smarta.day_periods.rahu_kalam]
+monday = 2
+tuesday = 7
+wednesday = 5
+thursday = 6
+friday = 4
+saturday = 3
+sunday = 8
+
+[profiles.north-indian-smarta.day_periods.yamaganda]
+monday = 4
+tuesday = 3
+wednesday = 2
+thursday = 1
+friday = 7
+saturday = 6
+sunday = 5
+
+[profiles.north-indian-smarta.day_periods.gulika_kalam]
+monday = 6
+tuesday = 5
+wednesday = 4
+thursday = 3
+friday = 2
+saturday = 1
+sunday = 7

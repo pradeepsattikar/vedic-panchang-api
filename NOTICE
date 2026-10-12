@@ -1,0 +1,15 @@
+Vedic Panchang API
+Copyright (C) 2026 Pradeep Sattikar
+Licensed under the GNU Affero General Public License v3.0 or later (see LICENSE).
+
+This software includes or depends on:
+
+- Swiss Ephemeris, Copyright (C) Astrodienst AG, Switzerland, used under the GNU Affero
+  General Public License through the pyswisseph Python bindings.
+
+- City data (src/vedic_panchang/infra/data/cities.csv) derived from GeoNames
+  (https://www.geonames.org), licensed under Creative Commons Attribution 4.0
+  (https://creativecommons.org/licenses/by/4.0/). Changes: filtered by country, minimum
+  population and feature type; columns selected; region and country names joined.
+
+- IANA Time Zone Database via the tzdata package (public domain).
