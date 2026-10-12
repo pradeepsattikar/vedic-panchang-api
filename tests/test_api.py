@@ -95,3 +95,39 @@ def test_meta(client):
     assert "GeoNames" in meta["city_catalogue"]["attribution"]
     assert meta["license"] == "AGPL-3.0-or-later"
     assert meta["timezone_data_version"]
+
+
+def test_month_has_one_summary_per_day_matching_daily(client, daily):
+    body = client.get(
+        "/v1/panchang/month", params={"city_id": "1275339", "year": 2026, "month": 11}
+    ).json()
+    days = body["days"]
+    assert [d["date"] for d in days][::29] == ["2026-11-01", "2026-11-30"]
+    assert len(days) == 30
+    full = daily("2026-11-08", city_id="1275339")
+    nov8 = days[7]
+    assert nov8["tithi_at_sunrise"] == full["tithi"]["at_sunrise"]
+    assert nov8["sunrise"] == full["sun"]["sunrise"]
+    assert {o["festival_id"] for o in nov8["observances"]} == {
+        o["festival_id"] for o in full["observances"]
+    }
+
+
+def test_month_handles_leap_february(client):
+    body = client.get(
+        "/v1/panchang/month", params={"city_id": "6167865", "year": 2028, "month": 2}
+    ).json()
+    assert len(body["days"]) == 29
+
+
+@pytest.mark.parametrize(
+    ("params", "code"),
+    [
+        ({"year": 2036, "month": 1}, "date_out_of_range"),
+        ({"year": 2026, "month": 13}, "invalid_request"),
+    ],
+)
+def test_month_errors(client, params, code):
+    response = client.get("/v1/panchang/month", params={"city_id": "6167865", **params})
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == code

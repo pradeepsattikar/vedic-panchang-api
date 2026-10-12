@@ -1,7 +1,8 @@
 """Use cases: daily Panchang, festivals and the city catalogue."""
 
+import calendar
 from dataclasses import dataclass
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from functools import lru_cache
 
 from vedic_panchang import __version__
@@ -83,6 +84,21 @@ class PanchangResult:
 
 
 @dataclass(frozen=True)
+class DaySummary:
+    panchang: DailyPanchang
+    observances: tuple[FestivalOccurrence, ...]
+
+
+@dataclass(frozen=True)
+class MonthResult:
+    place: Place
+    year: int
+    month: int
+    days: tuple[DaySummary, ...]
+    provenance: Provenance
+
+
+@dataclass(frozen=True)
 class FestivalsResult:
     place: Place
     year: int
@@ -145,6 +161,30 @@ class PanchangService:
             observances=tuple(o for o in year if o.date == day),
             provenance=self._provenance(profile, festival_set),
         )
+
+    def month(
+        self, place: Place, year: int | None, month: int | None, profile_id: str | None
+    ) -> MonthResult:
+        profile = self.profiles.get(profile_id)
+        today = datetime.now(place.location.tz).date()
+        year, month = year or today.year, month or today.month
+        first = date(year, month, 1)
+        last = date(year, month, calendar.monthrange(year, month)[1])
+        self._check_date(first)
+        self._check_date(last)
+        festival_set = load_festival_set(profile.festival_set)
+        observances = self._festivals(year, place.location, profile, festival_set)
+        days = []
+        day = first
+        while day <= last:
+            days.append(
+                DaySummary(
+                    panchang=self._calculate(day, place.location, profile),
+                    observances=tuple(o for o in observances if o.date == day),
+                )
+            )
+            day += timedelta(days=1)
+        return MonthResult(place, year, month, tuple(days), self._provenance(profile, festival_set))
 
     def festivals(
         self,

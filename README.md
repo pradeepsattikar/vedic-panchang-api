@@ -44,6 +44,7 @@ docker run -p 8000:8000 vedic-panchang-api
 |---|---|
 | `GET /v1/panchang/daily?city_id=6167865&date=2026-10-10` | Daily Panchang for a catalogue city |
 | `GET /v1/panchang/daily?lat=19.07&lon=72.88&tz=Asia/Kolkata&date=2026-10-10` | Daily Panchang for any coordinates (`alt` optional, metres) |
+| `GET /v1/panchang/month?city_id=6167865&year=2026&month=11` | One compact summary per day (Tithi/Nakshatra at sunrise, sunrise/sunset, Masa, festivals) for calendar views |
 | `GET /v1/festivals?city_id=6167865&year=2026` | Festivals and observances in a year, with local dates (`category=major` to filter) |
 | `GET /v1/festivals/diwali?city_id=6167865&year=2026` | Occurrences of one festival |
 | `GET /v1/cities?q=toronto&country=CA` | Search the city catalogue (case- and accent-insensitive) |

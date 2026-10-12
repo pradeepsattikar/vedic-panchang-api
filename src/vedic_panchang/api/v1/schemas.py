@@ -175,6 +175,44 @@ class DailyPanchangOut(BaseModel):
     festival_rule_version: str
 
 
+class MonthDayOut(BaseModel):
+    """Compact day summary for calendar views; use /panchang/daily for full detail."""
+
+    date: date
+    vara: VaraOut
+    masa: LunarMonthsOut
+    sunrise: CelestialEventOut
+    sunset: CelestialEventOut
+    tithi_at_sunrise: SpanOut | None
+    nakshatra_at_sunrise: SpanOut | None
+    observances: list[FestivalOut]
+
+
+class MonthRequestOut(BaseModel):
+    year: int
+    month: int
+    city_id: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+    timezone: str | None = None
+    profile: str
+
+
+class MonthOut(BaseModel):
+    request: MonthRequestOut
+    year: int
+    month: int
+    location: LocationOut
+    city: CityOut | None
+    profile: ProfileOut
+    festival_rule_version: str
+    engine: EngineOut
+    api_version: str
+    timezone_data_version: str
+    generated_at: datetime
+    days: list[MonthDayOut]
+
+
 class FestivalsRequestOut(BaseModel):
     year: int
     city_id: str | None = None

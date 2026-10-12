@@ -17,3 +17,19 @@ jobs:
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run pytest -q
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t vedic-panchang-api .
+      - run: docker run -d --name api -p 8000:8000 vedic-panchang-api
+      - name: Smoke test the running container
+        run: |
+          for i in $(seq 1 30); do curl -sf localhost:8000/health && break; sleep 1; done
+          curl -sf "localhost:8000/v1/panchang/daily?city_id=1275339&date=2026-10-10" \
+            | python3 -c "import json,sys; d=json.load(sys.stdin); assert d['tithi']['at_sunrise']['id']=='krishna-amavasya', d; print('daily ok')"
+          curl -sf "localhost:8000/v1/festivals/diwali?city_id=1275339&year=2026" \
+            | python3 -c "import json,sys; d=json.load(sys.stdin); assert d['festivals'][0]['date']=='2026-11-08', d; print('festivals ok')"
+      - if: failure()
+        run: docker logs api

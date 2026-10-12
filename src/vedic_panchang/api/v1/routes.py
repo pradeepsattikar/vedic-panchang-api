@@ -87,6 +87,46 @@ def daily_panchang(
     )
 
 
+@router.get("/panchang/month", response_model=schemas.MonthOut, tags=["panchang"])
+def month_panchang(
+    service: Service,
+    place: PlaceParam,
+    year: Annotated[int | None, Query(description="Default: current year there")] = None,
+    month: Annotated[int | None, Query(ge=1, le=12, description="Default: current month")] = None,
+    profile: ProfileParam = None,
+):
+    """One compact summary per day of a month (Tithi and Nakshatra at sunrise, sunrise,
+    sunset, Masa, festivals), for calendar views."""
+    result = service.month(place, year, month, profile)
+    event = schemas.CelestialEventOut.model_validate
+    span = schemas.SpanOut.model_validate
+    return schemas.MonthOut(
+        request=schemas.MonthRequestOut(
+            **place.request,
+            year=result.year,
+            month=result.month,
+            profile=result.provenance.profile.id,
+        ),
+        year=result.year,
+        month=result.month,
+        **_context(place, result.provenance),
+        days=[
+            schemas.MonthDayOut(
+                date=d.panchang.date,
+                vara=schemas.VaraOut.model_validate(d.panchang.vara),
+                masa=schemas.LunarMonthsOut.model_validate(d.panchang.masa),
+                sunrise=event(d.panchang.sunrise),
+                sunset=event(d.panchang.sunset),
+                tithi_at_sunrise=d.panchang.tithi.at_sunrise and span(d.panchang.tithi.at_sunrise),
+                nakshatra_at_sunrise=d.panchang.nakshatra.at_sunrise
+                and span(d.panchang.nakshatra.at_sunrise),
+                observances=[schemas.FestivalOut.model_validate(o) for o in d.observances],
+            )
+            for d in result.days
+        ],
+    )
+
+
 def _festivals_response(service, place, year, profile, festival_id=None, category=None):
     result = service.festivals(place, year, profile, festival_id, category)
     return schemas.FestivalsOut(
