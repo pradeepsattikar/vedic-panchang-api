@@ -104,22 +104,30 @@ def test_arizona_does_not_observe_dst(daily):
     assert offset(daily("2026-07-01", **PHOENIX)["sun"]["sunrise"]["time"]) == "-07:00"
 
 
-# ── No-moonrise days (valid outcome, never 00:00) ────────────────────────────────
+# ── Moon events within the Panchang day (sunrise to next sunrise, D06) ──────────
 
 
-def test_no_moonrise_day_reports_no_event_with_next_rise(daily):
-    moonrise = daily("2026-11-03", **LONDON)["moon"]["moonrise"]
-    assert moonrise["status"] == "no_event"
-    assert moonrise["time"] is None
-    assert minutes_apart(moonrise["next_time"], "2026-11-04T01:14") <= 1
+@pytest.mark.parametrize(
+    ("place", "day", "event", "next_time"),
+    [
+        (MUMBAI, "2026-10-10", "moonrise", "2026-10-11T06:55"),  # Amavasya
+        (LONDON, "2026-11-08", "moonrise", "2026-11-09T07:40"),
+        (LONDON, "2026-11-23", "moonset", "2026-11-24T07:43"),
+    ],
+)
+def test_no_moon_event_reports_no_event_with_next_time(daily, place, day, event, next_time):
+    result = daily(day, **place)["moon"][event]
+    assert result["status"] == "no_event"
+    assert result["time"] is None
+    assert minutes_apart(result["next_time"], next_time) <= 1
 
 
 @pytest.mark.parametrize(("day", "expected"), [
-    ("2026-11-02", "2026-11-02T23:53"),
-    ("2026-11-04", "2026-11-04T01:14"),
+    ("2026-11-02", "2026-11-03T01:11"),
+    ("2026-11-04", "2026-11-05T03:02"),
 ])  # fmt: skip
-def test_moonrise_present_on_neighbouring_days(daily, day, expected):
-    moonrise = daily(day, **LONDON)["moon"]["moonrise"]
+def test_moonrise_before_next_sunrise_carries_next_date(daily, day, expected):
+    moonrise = daily(day, **MUMBAI)["moon"]["moonrise"]
     assert moonrise["status"] == "occurs"
     assert minutes_apart(moonrise["time"], expected) <= 1
 

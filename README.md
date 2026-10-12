@@ -82,7 +82,7 @@ omitted, the API uses today's date at the requested location.
 | Sunrise/sunset | Upper limb of the Sun with standard atmospheric refraction |
 | Times | ISO 8601 with UTC offset, in the location's timezone, to the second. Reference panchangs display times rounded to the nearest minute |
 | Timezones | IANA IDs, resolved with the bundled `tzdata` package (never the host OS copy) |
-| Rise/set events | Searched within the local civil day. If none occurs, `status` is `no_event` and `next_time` gives the next occurrence |
+| Rise/set events | Sunrise/sunset: within the local civil date. Moonrise/moonset: within the Panchang day (sunrise to next sunrise), as Drik Panchang does, so a moonrise at 2 AM appears on the previous date's Panchang with its full date. If none occurs, `status` is `no_event` and `next_time` gives the next occurrence |
 | Rahu Kalam, Yamaganda, Gulika Kalam | One-eighth of daytime; part numbers per weekday in the profile |
 | Abhijit Muhurta | 8th of 15 daytime muhurtas |
 | Brahma Muhurta | 14th of 15 night muhurtas (night = 24 h − daytime) |

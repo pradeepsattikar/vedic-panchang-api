@@ -55,7 +55,7 @@ class CelestialEventOut(_Model):
     status: str = Field(description="occurs | no_event | unavailable")
     time: datetime | None = None
     next_time: datetime | None = Field(
-        None, description="For no_event: the next occurrence after this civil date"
+        None, description="For no_event: the next occurrence after the event's window"
     )
     reason: str | None = None
     moon_sun_separation_deg: float | None = Field(
@@ -113,11 +113,15 @@ class DayWindowOut(_Model):
 
 
 class SunOut(BaseModel):
+    """Sunrise and sunset on the local civil date."""
+
     sunrise: CelestialEventOut
     sunset: CelestialEventOut
 
 
 class MoonOut(BaseModel):
+    """Moonrise and moonset within the Panchang day (sunrise to next sunrise)."""
+
     moonrise: CelestialEventOut
     moonset: CelestialEventOut
 

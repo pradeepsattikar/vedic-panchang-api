@@ -4,9 +4,13 @@ Conventions (see rules/data/profiles.toml and the project decision log):
 - The Panchang day runs from local sunrise to the next local sunrise (D04). Element
   values "at sunrise" are the day-anchor values; every span overlapping the Panchang day
   is also returned with its start and end instants.
-- Rise/set searches are anchored at LOCAL midnight of the civil date, never UTC midnight.
-- A rise/set that does not happen within the local civil day is reported as NO_EVENT
-  (a valid outcome) together with the next occurrence, never as 00:00.
+- Sunrise/sunset belong to the local civil date; searches are anchored at LOCAL midnight,
+  never UTC midnight.
+- Moonrise/moonset belong to the Panchang day (sunrise to next sunrise), matching Drik
+  Panchang (D06, confirmed 2026-10-12: Mumbai 2026-11-03 shows moonrise 02:08 on Nov 4).
+  Without a sunrise (polar regions) the civil day is used instead.
+- An event that does not happen within its window is reported as NO_EVENT (a valid
+  outcome) together with the next occurrence, never as 00:00.
 """
 
 from collections.abc import Callable
@@ -75,14 +79,17 @@ class _Calculation:
             search_from, body, event, loc.longitude, loc.latitude, loc.altitude_m
         )
 
-    def in_day(self, jd: float) -> bool:
-        return self.day_start_jd <= jd < self.day_end_jd
-
     def celestial_event(
-        self, body: eph.Body, event: eph.RiseSet, search_from: float
+        self,
+        body: eph.Body,
+        event: eph.RiseSet,
+        window: tuple[float, float],
+        search_from: float | None = None,
+        window_name: str = "on this date",
     ) -> tuple[CelestialEvent, float | None]:
-        """Return the event for this civil day and its Julian day (None unless it occurs)."""
-        jd = self.next_event(body, event, search_from)
+        """Return the event within ``window`` and its Julian day (None unless it occurs)."""
+        start, end = window
+        jd = self.next_event(body, event, start if search_from is None else search_from)
         if jd is None:
             return (
                 CelestialEvent(
@@ -92,7 +99,7 @@ class _Calculation:
                 None,
             )
         separation = self.moon_sun_separation(jd) if body is eph.Body.MOON else None
-        if self.in_day(jd):
+        if start <= jd < end:
             return CelestialEvent(
                 EventStatus.OCCURS, time=self.local(jd), moon_sun_separation_deg=separation
             ), jd
@@ -100,7 +107,7 @@ class _Calculation:
             CelestialEvent(
                 EventStatus.NO_EVENT,
                 next_time=self.local(jd),
-                reason=f"No {body}{event} on this date",
+                reason=f"No {body}{event} {window_name}",
                 moon_sun_separation_deg=separation,
             ),
             None,
@@ -148,11 +155,10 @@ class _Calculation:
         sun, moon = eph.Body.SUN, eph.Body.MOON
         rise, set_ = eph.RiseSet.RISE, eph.RiseSet.SET
 
-        sunrise, sunrise_jd = self.celestial_event(sun, rise, self.day_start_jd)
+        civil_day = (self.day_start_jd, self.day_end_jd)
+        sunrise, sunrise_jd = self.celestial_event(sun, rise, civil_day)
         # Sunset is searched from sunrise so it always belongs to the same daytime.
-        sunset, sunset_jd = self.celestial_event(sun, set_, sunrise_jd or self.day_start_jd)
-        moonrise, _ = self.celestial_event(moon, rise, self.day_start_jd)
-        moonset, _ = self.celestial_event(moon, set_, self.day_start_jd)
+        sunset, sunset_jd = self.celestial_event(sun, set_, civil_day, search_from=sunrise_jd)
 
         next_sunrise_jd = None
         if sunrise_jd is not None and sunset_jd is not None:
@@ -165,6 +171,14 @@ class _Calculation:
             basis = DayWindowBasis.CIVIL_DAY
             window_jd = (self.day_start_jd, self.day_end_jd)
         window = DayWindow(basis, self.local(window_jd[0]), self.local(window_jd[1]))
+
+        moon_window_name = (
+            "between sunrise and the next sunrise"
+            if basis is DayWindowBasis.SUNRISE_TO_NEXT_SUNRISE
+            else "on this date"
+        )
+        moonrise, _ = self.celestial_event(moon, rise, window_jd, window_name=moon_window_name)
+        moonset, _ = self.celestial_event(moon, set_, window_jd, window_name=moon_window_name)
 
         weekday = self.day.weekday()
         return DailyPanchang(

@@ -8,8 +8,8 @@ from vedic_panchang.domain.panchang.masa import LunarMonths
 
 
 class EventStatus(StrEnum):
-    OCCURS = "occurs"  # the event happens within the local civil day
-    NO_EVENT = "no_event"  # valid outcome: the event does not happen on this civil day
+    OCCURS = "occurs"  # the event happens within its window (see DailyPanchang)
+    NO_EVENT = "no_event"  # valid outcome: the event does not happen within its window
     UNAVAILABLE = "unavailable"  # cannot be determined, e.g. polar night
 
 
@@ -17,7 +17,7 @@ class EventStatus(StrEnum):
 class CelestialEvent:
     status: EventStatus
     time: datetime | None = None
-    # When status is NO_EVENT: the next occurrence after this civil day, if any.
+    # When status is NO_EVENT: the next occurrence after the window, if any.
     next_time: datetime | None = None
     reason: str | None = None
     # Moon events only: angular distance between Moon and Sun at the event (degrees).
@@ -86,10 +86,10 @@ class DailyPanchang:
     vara: Vara
     masa: LunarMonths  # at sunrise (or at the start of the civil day if no sunrise)
     day_window: DayWindow
-    sunrise: CelestialEvent
-    sunset: CelestialEvent
-    moonrise: CelestialEvent
-    moonset: CelestialEvent
+    sunrise: CelestialEvent  # within the local civil date
+    sunset: CelestialEvent  # within the local civil date
+    moonrise: CelestialEvent  # within day_window (sunrise to next sunrise)
+    moonset: CelestialEvent  # within day_window
     tithi: Element
     nakshatra: Element
     yoga: Element

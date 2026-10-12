@@ -99,8 +99,16 @@ def test_moonrise(case):
     ref, body = case
     moonrise = body["moon"]["moonrise"]
     if ref["moonrise"] is None:
-        # Open question (D06): we report moonrise within the civil day (06:01 IST, before
-        # sunrise). Drik Panchang appears to report it within sunrise -> next sunrise, where
-        # there is none (next rise 06:55 IST on Oct 11, after the next sunrise).
-        pytest.xfail("D06 pending: civil-day vs sunrise-to-sunrise moon event window")
-    assert minutes_apart(moonrise["time"], ref["moonrise"]) <= MOON_TOLERANCE_MIN
+        # Moonrise 06:01 IST is before sunrise; the next (06:55 Oct 11) is after the next
+        # sunrise, so there is none within the Panchang day.
+        assert moonrise["status"] == "no_event"
+        assert moonrise["time"] is None
+    else:
+        assert minutes_apart(moonrise["time"], ref["moonrise"]) <= MOON_TOLERANCE_MIN
+
+
+def test_moonrise_after_midnight_belongs_to_previous_panchang_day(daily):
+    # Drik Panchang, Mumbai 2026-11-03: moonrise 02:08 AM on Nov 4 (checked by the founder).
+    moonrise = daily("2026-11-03", city_id="1275339")["moon"]["moonrise"]
+    assert moonrise["status"] == "occurs"
+    assert minutes_apart(moonrise["time"], "2026-11-04T02:08") <= 1
