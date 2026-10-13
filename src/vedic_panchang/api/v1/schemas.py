@@ -112,6 +112,7 @@ class FestivalOut(_Model):
     festival_id: str
     occurrence_id: str = Field(description="Stable across locations")
     name: str
+    short_name: str = Field(description="Label for tight spaces such as calendar cells")
     category: str = Field(description="major | observance")
     date: Annotated[date, Field(description="Local civil date of observance at this place")]
     kala: str | None = Field(

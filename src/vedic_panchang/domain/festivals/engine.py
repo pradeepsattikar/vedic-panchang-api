@@ -45,6 +45,7 @@ class FestivalOccurrence:
     festival_id: str
     occurrence_id: str  # stable across locations (derived from a global instant)
     name: str
+    short_name: str  # label for tight spaces such as calendar cells
     category: Category
     date: date  # local civil date of observance
     kala: str | None  # lunar rules: the part of day the Tithi must prevail in
@@ -132,6 +133,7 @@ def _lunar_occurrences(rule, instances, frames, profile) -> list[FestivalOccurre
                 festival_id=rule.id,
                 occurrence_id=f"{rule.id}:{from_jd(inst.start_jd, UTC).date()}",
                 name=_render(rule.name, inst.months, profile.month_system),
+                short_name=rule.short_name,
                 category=rule.category,
                 date=day,
                 kala=rule.kala.value,
@@ -159,6 +161,7 @@ def _solar_occurrences(rule: SolarRule, events: tuple[Sankranti, ...], frames: D
                 festival_id=rule.id,
                 occurrence_id=f"{rule.id}:{SIGN_IDS[event.sign]}:{from_jd(event.jd, UTC).year}",
                 name=rule.name.replace("{sign}", SIGN_NAMES[event.sign]),
+                short_name=rule.short_name,
                 category=rule.category,
                 date=day,
                 kala=None,

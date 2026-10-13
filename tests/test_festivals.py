@@ -63,6 +63,7 @@ def test_published_delhi_dates(festivals, year):
 def test_occurrence_carries_tithi_masa_and_kala(festivals):
     diwali = next(f for f in festivals(2026, **DELHI) if f["festival_id"] == "diwali")
     assert diwali["name"] == "Diwali (Lakshmi Puja)"
+    assert diwali["short_name"] == "Diwali"
     assert diwali["category"] == "major"
     assert diwali["kala"] == "pradosh"
     assert diwali["tithi"]["id"] == "krishna-amavasya"
@@ -138,3 +139,9 @@ def test_festival_errors(client, path, params, status, code):
     response = client.get(path, params={**params, **DELHI})
     assert response.status_code == status
     assert response.json()["error"]["code"] == code
+
+
+def test_every_short_name_fits_a_calendar_cell(festivals):
+    short_names = {f["short_name"] for f in festivals(2026, **DELHI)}
+    assert "Durga Asht." in short_names and "Ekadashi" in short_names
+    assert all(0 < len(name) <= 13 for name in short_names), sorted(short_names, key=len)[-3:]

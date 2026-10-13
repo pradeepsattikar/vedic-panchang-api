@@ -61,6 +61,7 @@ _DEFAULT_TIE = {Kala.SUNRISE: TieBreak.FIRST, Kala.MOONRISE: TieBreak.FIRST}
 class LunarRule:
     id: str
     name: str  # may contain {masa}: the month name in the profile's month system
+    short_name: str  # label for tight spaces (calendar cells)
     category: Category
     tithi: int
     amanta_month: int | None  # 0-11, None = every month
@@ -78,6 +79,7 @@ class SolarRule:
 
     id: str
     name: str  # may contain {sign}
+    short_name: str
     category: Category
     sign: int | None  # 0-11, None = every sign
 
@@ -104,6 +106,7 @@ def _lunar(raw: dict) -> LunarRule:
     return LunarRule(
         id=raw["id"],
         name=raw["name"],
+        short_name=raw.get("short_name", raw["name"]),
         category=Category(raw.get("category", "observance")),
         tithi=tithi,
         amanta_month=month,
@@ -120,6 +123,7 @@ def _solar(raw: dict) -> SolarRule:
     return SolarRule(
         id=raw["id"],
         name=raw["name"],
+        short_name=raw.get("short_name", raw["name"]),
         category=Category(raw.get("category", "observance")),
         sign=None if sign == "any" else SIGN_IDS.index(sign),
     )
