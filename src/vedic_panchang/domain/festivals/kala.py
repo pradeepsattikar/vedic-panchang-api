@@ -53,6 +53,9 @@ class DayFrames:
             return None
         return DayFrame(day, sunrise, sunset, next_sunrise)
 
+    def next_moonrise(self, jd: float) -> float | None:
+        return self._next(eph.Body.MOON, eph.RiseSet.RISE, jd)
+
     def moonrise(self, frame: DayFrame) -> float | None:
         """Moonrise within the Panchang day (sunrise to next sunrise), if any."""
         if frame.day not in self._moonrises:

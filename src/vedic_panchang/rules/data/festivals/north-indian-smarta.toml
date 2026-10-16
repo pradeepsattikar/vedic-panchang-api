@@ -9,15 +9,15 @@
 #      sunrise/moonrise, "max_coverage" otherwise.
 # If the Tithi prevails in the kala on neither day, the day it prevails at sunrise is used.
 # avoid_bhadra: time under Bhadra (Vishti karana) does not count towards the kala.
-# puja_time: report the kala on the observance day (while the Tithi prevails) as the puja
-#      time. Only for festivals where the kala alone is the customary muhurta (not e.g.
-#      Diwali, which also needs Sthir Lagna).
+# puja: puja / observance times to report, most important first, by muhurta recipe
+#      (domain/festivals/muhurta.py, each checked against Drik Panchang). Omitted where the
+#      tradition prescribes no particular time (e.g. Holi, Guru Purnima).
 #
 # short_name: label for tight spaces such as calendar cells (at most ~12 characters).
 #
 # Any change here MUST bump rule_version.
 
-rule_version = "2026.10.3"
+rule_version = "2026.10.4"
 
 # ── Major festivals ────────────────────────────────────────────────────────────
 
@@ -27,6 +27,7 @@ name = "Makar Sankranti"
 short_name = "Makar Sank."
 category = "major"
 sign = "makara"
+puja = ["punya_kaal"]
 
 [[lunar]]
 id = "vasant-panchami"
@@ -36,6 +37,7 @@ category = "major"
 amanta_month = "magha"
 tithi = 5
 kala = "purvahna"
+puja = ["purvahna"]
 
 [[lunar]]
 id = "maha-shivaratri"
@@ -45,7 +47,7 @@ category = "major"
 amanta_month = "magha"
 tithi = 29
 kala = "nishita"
-puja_time = true
+puja = ["nishita", "prahar_1", "prahar_2", "prahar_3", "prahar_4"]
 
 [[lunar]]
 id = "holika-dahan"
@@ -55,6 +57,7 @@ category = "major"
 amanta_month = "phalguna"
 tithi = 15
 kala = "pradosh"  # on the Purnima evening; if Bhadra prevails, performed after it ends
+puja = ["holika_dahan"]
 
 [[lunar]]
 id = "holi"
@@ -73,6 +76,7 @@ category = "major"
 amanta_month = "chaitra"
 tithi = 1
 kala = "sunrise"
+puja = ["ghatasthapana", "abhijit"]
 
 [[lunar]]
 id = "ram-navami"
@@ -82,7 +86,7 @@ category = "major"
 amanta_month = "chaitra"
 tithi = 9
 kala = "madhyahna"
-puja_time = true
+puja = ["madhyahna"]
 
 [[lunar]]
 id = "hanuman-jayanti"
@@ -101,6 +105,7 @@ category = "major"
 amanta_month = "vaishakha"
 tithi = 3
 kala = "purvahna"
+puja = ["purvahna"]
 
 [[lunar]]
 id = "vat-savitri-vrat"
@@ -137,6 +142,7 @@ category = "major"
 amanta_month = "shravana"
 tithi = 5
 kala = "sunrise"
+puja = ["pratahkala"]
 
 [[lunar]]
 id = "raksha-bandhan"
@@ -147,6 +153,7 @@ amanta_month = "shravana"
 tithi = 15
 kala = "aparahna"
 avoid_bhadra = true
+puja = ["rakhi"]
 
 [[lunar]]
 id = "krishna-janmashtami"
@@ -156,7 +163,7 @@ category = "major"
 amanta_month = "shravana"
 tithi = 23
 kala = "nishita"
-puja_time = true
+puja = ["nishita"]
 
 [[lunar]]
 id = "hartalika-teej"
@@ -166,6 +173,7 @@ category = "major"
 amanta_month = "bhadrapada"
 tithi = 3
 kala = "sunrise"
+puja = ["pratahkala", "pradosh"]
 
 [[lunar]]
 id = "ganesh-chaturthi"
@@ -175,7 +183,7 @@ category = "major"
 amanta_month = "bhadrapada"
 tithi = 4
 kala = "madhyahna"
-puja_time = true
+puja = ["madhyahna"]
 
 [[lunar]]
 id = "anant-chaturdashi"
@@ -185,6 +193,7 @@ category = "major"
 amanta_month = "bhadrapada"
 tithi = 14
 kala = "sunrise"
+puja = ["tithi_daytime"]
 
 [[lunar]]
 id = "pitru-paksha-begins"
@@ -194,6 +203,7 @@ category = "major"
 amanta_month = "bhadrapada"
 tithi = 16
 kala = "aparahna"
+puja = ["kutup", "rohina", "aparahna"]
 
 [[lunar]]
 id = "sarva-pitru-amavasya"
@@ -203,6 +213,7 @@ category = "major"
 amanta_month = "bhadrapada"
 tithi = 30
 kala = "aparahna"
+puja = ["kutup", "rohina", "aparahna"]
 
 [[lunar]]
 id = "sharad-navratri"
@@ -212,6 +223,7 @@ category = "major"
 amanta_month = "ashwin"
 tithi = 1
 kala = "sunrise"
+puja = ["ghatasthapana_kanya", "abhijit"]
 
 [[lunar]]
 id = "durga-ashtami"
@@ -221,6 +233,7 @@ category = "major"
 amanta_month = "ashwin"
 tithi = 8
 kala = "sunrise"
+puja = ["sandhi_puja"]
 
 [[lunar]]
 id = "maha-navami"
@@ -239,6 +252,7 @@ category = "major"
 amanta_month = "ashwin"
 tithi = 10
 kala = "aparahna"
+puja = ["vijay", "aparahna"]
 
 [[lunar]]
 id = "sharad-purnima"
@@ -248,6 +262,7 @@ category = "major"
 amanta_month = "ashwin"
 tithi = 15
 kala = "moonrise"
+puja = ["nishita", "moonrise"]
 
 [[lunar]]
 id = "karwa-chauth"
@@ -257,7 +272,7 @@ category = "major"
 amanta_month = "ashwin"
 tithi = 19
 kala = "moonrise"
-puja_time = true
+puja = ["sandhya_puja", "moonrise", "upavasa"]
 
 [[lunar]]
 id = "ahoi-ashtami"
@@ -267,6 +282,7 @@ category = "major"
 amanta_month = "ashwin"
 tithi = 23
 kala = "pradosh"
+puja = ["sandhya_puja", "star_sighting"]
 
 [[lunar]]
 id = "dhanteras"
@@ -276,6 +292,7 @@ category = "major"
 amanta_month = "ashwin"
 tithi = 28
 kala = "pradosh"
+puja = ["dhanteras_puja", "pradosh"]
 
 [[lunar]]
 id = "naraka-chaturdashi"
@@ -285,6 +302,7 @@ category = "major"
 amanta_month = "ashwin"
 tithi = 29
 kala = "arunodaya"
+puja = ["abhyang_snan"]
 
 [[lunar]]
 id = "diwali"
@@ -294,6 +312,7 @@ category = "major"
 amanta_month = "ashwin"
 tithi = 30
 kala = "pradosh"
+puja = ["lakshmi_puja", "pradosh", "nishita"]
 
 [[lunar]]
 id = "govardhan-puja"
@@ -303,6 +322,7 @@ category = "major"
 amanta_month = "kartika"
 tithi = 1
 kala = "aparahna"  # avoids the day the Dwitiya moon is seen
+puja = ["pratahkala", "sayankala"]
 
 [[lunar]]
 id = "bhai-dooj"
@@ -312,7 +332,7 @@ category = "major"
 amanta_month = "kartika"
 tithi = 2
 kala = "aparahna"
-puja_time = true
+puja = ["aparahna"]
 
 [[lunar]]
 id = "chhath-puja"
@@ -322,6 +342,7 @@ category = "major"
 amanta_month = "kartika"
 tithi = 6
 kala = "sunset"
+puja = ["sandhya_arghya", "usha_arghya"]
 
 [[lunar]]
 id = "kartik-purnima"
@@ -331,6 +352,7 @@ category = "major"
 amanta_month = "kartika"
 tithi = 15
 kala = "sunrise"
+puja = ["dev_deepawali"]
 
 [[lunar]]
 id = "gita-jayanti"
@@ -350,6 +372,7 @@ short_name = "Ekadashi"
 amanta_month = "chaitra"
 tithi = 11
 kala = "sunrise"
+puja = ["parana"]
 
 [[lunar]]
 id = "varuthini-ekadashi"
@@ -358,6 +381,7 @@ short_name = "Ekadashi"
 amanta_month = "chaitra"
 tithi = 26
 kala = "sunrise"
+puja = ["parana"]
 
 [[lunar]]
 id = "mohini-ekadashi"
@@ -366,6 +390,7 @@ short_name = "Ekadashi"
 amanta_month = "vaishakha"
 tithi = 11
 kala = "sunrise"
+puja = ["parana"]
 
 [[lunar]]
 id = "apara-ekadashi"
@@ -374,6 +399,7 @@ short_name = "Ekadashi"
 amanta_month = "vaishakha"
 tithi = 26
 kala = "sunrise"
+puja = ["parana"]
 
 [[lunar]]
 id = "nirjala-ekadashi"
@@ -383,6 +409,7 @@ category = "major"
 amanta_month = "jyeshtha"
 tithi = 11
 kala = "sunrise"
+puja = ["parana"]
 
 [[lunar]]
 id = "yogini-ekadashi"
@@ -391,6 +418,7 @@ short_name = "Ekadashi"
 amanta_month = "jyeshtha"
 tithi = 26
 kala = "sunrise"
+puja = ["parana"]
 
 [[lunar]]
 id = "devshayani-ekadashi"
@@ -400,6 +428,7 @@ category = "major"
 amanta_month = "ashadha"
 tithi = 11
 kala = "sunrise"
+puja = ["parana"]
 
 [[lunar]]
 id = "kamika-ekadashi"
@@ -408,6 +437,7 @@ short_name = "Ekadashi"
 amanta_month = "ashadha"
 tithi = 26
 kala = "sunrise"
+puja = ["parana"]
 
 [[lunar]]
 id = "shravana-putrada-ekadashi"
@@ -416,6 +446,7 @@ short_name = "Ekadashi"
 amanta_month = "shravana"
 tithi = 11
 kala = "sunrise"
+puja = ["parana"]
 
 [[lunar]]
 id = "aja-ekadashi"
@@ -424,6 +455,7 @@ short_name = "Ekadashi"
 amanta_month = "shravana"
 tithi = 26
 kala = "sunrise"
+puja = ["parana"]
 
 [[lunar]]
 id = "parsva-ekadashi"
@@ -432,6 +464,7 @@ short_name = "Ekadashi"
 amanta_month = "bhadrapada"
 tithi = 11
 kala = "sunrise"
+puja = ["parana"]
 
 [[lunar]]
 id = "indira-ekadashi"
@@ -440,6 +473,7 @@ short_name = "Ekadashi"
 amanta_month = "bhadrapada"
 tithi = 26
 kala = "sunrise"
+puja = ["parana"]
 
 [[lunar]]
 id = "papankusha-ekadashi"
@@ -448,6 +482,7 @@ short_name = "Ekadashi"
 amanta_month = "ashwin"
 tithi = 11
 kala = "sunrise"
+puja = ["parana"]
 
 [[lunar]]
 id = "rama-ekadashi"
@@ -456,6 +491,7 @@ short_name = "Ekadashi"
 amanta_month = "ashwin"
 tithi = 26
 kala = "sunrise"
+puja = ["parana"]
 
 [[lunar]]
 id = "dev-uthani-ekadashi"
@@ -465,6 +501,7 @@ category = "major"
 amanta_month = "kartika"
 tithi = 11
 kala = "sunrise"
+puja = ["parana"]
 
 [[lunar]]
 id = "utpanna-ekadashi"
@@ -473,6 +510,7 @@ short_name = "Ekadashi"
 amanta_month = "kartika"
 tithi = 26
 kala = "sunrise"
+puja = ["parana"]
 
 [[lunar]]
 id = "mokshada-ekadashi"
@@ -481,6 +519,7 @@ short_name = "Ekadashi"
 amanta_month = "margashirsha"
 tithi = 11
 kala = "sunrise"
+puja = ["parana"]
 
 [[lunar]]
 id = "saphala-ekadashi"
@@ -489,6 +528,7 @@ short_name = "Ekadashi"
 amanta_month = "margashirsha"
 tithi = 26
 kala = "sunrise"
+puja = ["parana"]
 
 [[lunar]]
 id = "pausha-putrada-ekadashi"
@@ -497,6 +537,7 @@ short_name = "Ekadashi"
 amanta_month = "pausha"
 tithi = 11
 kala = "sunrise"
+puja = ["parana"]
 
 [[lunar]]
 id = "shattila-ekadashi"
@@ -505,6 +546,7 @@ short_name = "Ekadashi"
 amanta_month = "pausha"
 tithi = 26
 kala = "sunrise"
+puja = ["parana"]
 
 [[lunar]]
 id = "jaya-ekadashi"
@@ -513,6 +555,7 @@ short_name = "Ekadashi"
 amanta_month = "magha"
 tithi = 11
 kala = "sunrise"
+puja = ["parana"]
 
 [[lunar]]
 id = "vijaya-ekadashi"
@@ -521,6 +564,7 @@ short_name = "Ekadashi"
 amanta_month = "magha"
 tithi = 26
 kala = "sunrise"
+puja = ["parana"]
 
 [[lunar]]
 id = "amalaki-ekadashi"
@@ -529,6 +573,7 @@ short_name = "Ekadashi"
 amanta_month = "phalguna"
 tithi = 11
 kala = "sunrise"
+puja = ["parana"]
 
 [[lunar]]
 id = "papmochani-ekadashi"
@@ -537,6 +582,7 @@ short_name = "Ekadashi"
 amanta_month = "phalguna"
 tithi = 26
 kala = "sunrise"
+puja = ["parana"]
 
 [[lunar]]
 id = "padmini-ekadashi"
@@ -546,6 +592,7 @@ amanta_month = "any"
 adhika = "only"
 tithi = 11
 kala = "sunrise"
+puja = ["parana"]
 
 [[lunar]]
 id = "parama-ekadashi"
@@ -555,6 +602,7 @@ amanta_month = "any"
 adhika = "only"
 tithi = 26
 kala = "sunrise"
+puja = ["parana"]
 
 # ── Monthly observances ────────────────────────────────────────────────────────
 
@@ -565,6 +613,7 @@ short_name = "Purnima"
 amanta_month = "any"
 tithi = 15
 kala = "sunrise"
+puja = ["moonrise"]
 
 [[lunar]]
 id = "amavasya"
@@ -581,7 +630,7 @@ short_name = "Sankashti"
 amanta_month = "any"
 tithi = 19
 kala = "moonrise"
-puja_time = true
+puja = ["moonrise"]
 
 [[lunar]]
 id = "vinayaka-chaturthi"
@@ -590,8 +639,8 @@ short_name = "Vinayaka"
 amanta_month = "any"
 tithi = 4
 kala = "madhyahna"
-puja_time = true
 skip_months = ["bhadrapada"]  # that day is Ganesh Chaturthi
+puja = ["madhyahna"]
 
 [[lunar]]
 id = "shukla-pradosh"
@@ -600,7 +649,7 @@ short_name = "Pradosh"
 amanta_month = "any"
 tithi = 13
 kala = "pradosh"
-puja_time = true
+puja = ["pradosh"]
 
 [[lunar]]
 id = "krishna-pradosh"
@@ -609,7 +658,7 @@ short_name = "Pradosh"
 amanta_month = "any"
 tithi = 28
 kala = "pradosh"
-puja_time = true
+puja = ["pradosh"]
 
 [[lunar]]
 id = "masik-shivaratri"
@@ -618,8 +667,8 @@ short_name = "Shivaratri"
 amanta_month = "any"
 tithi = 29
 kala = "nishita"
-puja_time = true
 skip_months = ["magha"]  # that night is Maha Shivaratri
+puja = ["nishita"]
 
 [[solar]]
 id = "sankranti"

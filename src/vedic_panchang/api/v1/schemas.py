@@ -109,9 +109,12 @@ class LunarMonthsOut(_Model):
 
 
 class PujaTimeOut(_Model):
-    kala: str = Field(description="pradosh | madhyahna | aparahna | nishita | moonrise")
+    id: str = Field(
+        description="Muhurta id, e.g. pradosh, madhyahna, nishita, lakshmi_puja, parana, "
+        "rakhi, holika_dahan, moonrise. Labels are the client's (i18n)."
+    )
     start: datetime
-    end: datetime = Field(description="Equal to start for an instant (moonrise)")
+    end: datetime = Field(description="Equal to start for an instant (moonrise, sunset)")
 
 
 class FestivalOut(_Model):
@@ -127,10 +130,10 @@ class FestivalOut(_Model):
     tithi: SpanOut | None = Field(None, description="The Tithi with local start and end")
     masa: LunarMonthsOut | None = None
     sankranti_time: datetime | None = Field(None, description="Solar festivals: Sun's ingress")
-    puja_time: PujaTimeOut | None = Field(
-        None,
-        description="The kala on the observance day while the Tithi prevails, for festivals "
-        "where it is the customary puja time; absent otherwise",
+    puja_times: list[PujaTimeOut] = Field(
+        default_factory=list,
+        description="Customary puja / observance times, most important first. Empty when the "
+        "tradition prescribes no particular time. Parana is on the day after the date.",
     )
 
 

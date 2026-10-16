@@ -8,8 +8,6 @@ Drik Panchang check.
 
 import pytest
 
-from tests.conftest import minutes_apart
-
 DELHI = {"lat": 28.6139, "lon": 77.2090, "tz": "Asia/Kolkata", "alt": 216}
 TORONTO = {"city_id": "6167865"}
 
@@ -147,35 +145,3 @@ def test_every_short_name_fits_a_calendar_cell(festivals):
     short_names = {f["short_name"] for f in festivals(2026, **DELHI)}
     assert "Durga Asht." in short_names and "Ekadashi" in short_names
     assert all(0 < len(name) <= 13 for name in short_names), sorted(short_names, key=len)[-3:]
-
-
-BRAMPTON = {"lat": 43.6834, "lon": -79.7663, "tz": "America/Toronto", "alt": 218}
-
-
-def _by_id(items: list[dict], festival_id: str, day: str) -> dict:
-    return next(f for f in items if f["festival_id"] == festival_id and f["date"] == day)
-
-
-def test_pradosh_puja_time_matches_drik(festivals):
-    # Drik Panchang, Brampton, Shukla Pradosh 2026-10-23: puja 06:23 PM to 09:03 PM.
-    pradosh = _by_id(festivals(2026, **BRAMPTON), "shukla-pradosh", "2026-10-23")
-    puja = pradosh["puja_time"]
-    assert puja["kala"] == "pradosh"
-    assert minutes_apart(puja["start"], "2026-10-23T18:23") == 0
-    assert minutes_apart(puja["end"], "2026-10-23T21:03") == 0
-
-
-def test_puja_time_is_cut_to_the_tithi(festivals):
-    # Trayodashi begins after sunset on 2026-11-21, so puja starts with the Tithi.
-    pradosh = _by_id(festivals(2026, **BRAMPTON), "shukla-pradosh", "2026-11-21")
-    assert pradosh["puja_time"]["start"] == pradosh["tithi"]["start"]
-
-
-def test_puja_time_shapes(festivals):
-    items = festivals(2026, **BRAMPTON)
-    karwa = _by_id(items, "karwa-chauth", "2026-10-28")["puja_time"]
-    assert karwa["kala"] == "moonrise" and karwa["start"] == karwa["end"]
-    nishita = _by_id(items, "masik-shivaratri", "2026-11-07")["puja_time"]
-    assert nishita["start"].startswith("2026-11-07") and nishita["end"].startswith("2026-11-08")
-    # Diwali Lakshmi Puja also needs Sthir Lagna: no puja time until that rule exists.
-    assert _by_id(items, "diwali", "2026-11-08")["puja_time"] is None

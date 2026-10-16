@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 
 from vedic_panchang.astronomy.julian import from_jd
+from vedic_panchang.domain.festivals import muhurta
 from vedic_panchang.domain.festivals.calendar import (
     Sankranti,
     TithiInstance,
@@ -42,12 +43,9 @@ SIGN_NAMES = (
 
 @dataclass(frozen=True)
 class PujaTime:
-    """The rule's kala on the observance day while the Tithi prevails.
+    """A named puja / observance time; an instant (e.g. moonrise) has start == end."""
 
-    Moonrise is an instant (start == end) and is reported even if the Tithi has ended.
-    """
-
-    kala: str
+    id: str
     start: datetime
     end: datetime
 
@@ -64,7 +62,7 @@ class FestivalOccurrence:
     tithi: Span | None = None  # lunar rules: the Tithi with local start/end
     masa: LunarMonths | None = None
     sankranti_time: datetime | None = None  # solar rules
-    puja_time: PujaTime | None = None  # lunar rules that opt in
+    puja_times: tuple[PujaTime, ...] = ()
 
 
 def _matches(rule: LunarRule, inst: TithiInstance) -> bool:
@@ -133,25 +131,20 @@ def _tithi_span(inst: TithiInstance, frames: DayFrames) -> Span:
     )
 
 
-def _puja_time(
-    rule: LunarRule, inst: TithiInstance, day: date, frames: DayFrames
-) -> PujaTime | None:
+def _puja_times(recipes, frames, ayanamsha, day, tithi=None, next_tithi=None, sankranti_jd=None):
     frame = frames.frame(day)
-    window = frame and frames.window(frame, rule.kala)
-    if window is None:
-        return None
-    start, end = window
-    if start != end:  # a span: only while the Tithi prevails
-        start, end = max(start, inst.start_jd), min(end, inst.end_jd)
-        if start >= end:
-            return None
-    tz = frames.tz
-    return PujaTime(kala=rule.kala.value, start=from_jd(start, tz), end=from_jd(end, tz))
+    if not recipes or frame is None:
+        return ()
+    ctx = muhurta.Context(frames, ayanamsha, day, frame, tithi, next_tithi, sankranti_jd)
+    return tuple(
+        PujaTime(w.id, from_jd(w.start, frames.tz), from_jd(w.end, frames.tz))
+        for w in muhurta.puja_windows(recipes, ctx)
+    )
 
 
 def _lunar_occurrences(rule, instances, frames, profile) -> list[FestivalOccurrence]:
     result = []
-    for inst in instances:
+    for position, inst in enumerate(instances):
         if not _matches(rule, inst):
             continue
         day = _choose_day(rule, inst, frames, profile.ayanamsha)
@@ -168,14 +161,21 @@ def _lunar_occurrences(rule, instances, frames, profile) -> list[FestivalOccurre
                 kala=rule.kala.value,
                 tithi=_tithi_span(inst, frames),
                 masa=inst.months,
-                puja_time=_puja_time(rule, inst, day, frames) if rule.puja_time else None,
+                puja_times=_puja_times(
+                    rule.puja,
+                    frames,
+                    profile.ayanamsha,
+                    day,
+                    inst,
+                    instances[position + 1] if position + 1 < len(instances) else None,
+                ),  # fmt: skip
             )
         )
     return result
 
 
 def _solar_occurrences(rule: SolarRule, events: tuple[Sankranti, ...], frames: DayFrames,
-                       claimed_signs: set[int]) -> list[FestivalOccurrence]:  # fmt: skip
+                       claimed_signs: set[int], ayanamsha) -> list[FestivalOccurrence]:  # fmt: skip
     result = []
     for event in events:
         if rule.sign is not None and event.sign != rule.sign:
@@ -196,6 +196,7 @@ def _solar_occurrences(rule: SolarRule, events: tuple[Sankranti, ...], frames: D
                 date=day,
                 kala=None,
                 sankranti_time=from_jd(event.jd, frames.tz),
+                puja_times=_puja_times(rule.puja, frames, ayanamsha, day, sankranti_jd=event.jd),
             )
         )
     return result
@@ -214,7 +215,7 @@ def festivals_for_year(
         occurrences += _lunar_occurrences(rule, instances, frames, profile)
     claimed = {r.sign for r in festival_set.solar if r.sign is not None}
     for rule in festival_set.solar:
-        occurrences += _solar_occurrences(rule, events, frames, claimed)
+        occurrences += _solar_occurrences(rule, events, frames, claimed, profile.ayanamsha)
 
     in_year = [o for o in occurrences if o.date.year == year]
     # Major festivals first within a day, then by name, for a stable order.

@@ -71,8 +71,8 @@ class LunarRule:
     skip_amanta_months: frozenset[int]
     # Exclude time under Bhadra (Vishti karana) from the kala, e.g. Raksha Bandhan.
     avoid_bhadra: bool = False
-    # Report the kala on the observance day as the puja time (where it is well defined).
-    puja_time: bool = False
+    # Puja / observance times to report, by muhurta recipe (domain/festivals/muhurta.py).
+    puja: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -84,6 +84,7 @@ class SolarRule:
     short_name: str
     category: Category
     sign: int | None  # 0-11, None = every sign
+    puja: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -96,16 +97,6 @@ class FestivalSet:
 
 def _month(value: str) -> int | None:
     return None if value == "any" else MONTH_IDS.index(value)
-
-
-_PUJA_KALAS = {Kala.MADHYAHNA, Kala.APARAHNA, Kala.PRADOSH, Kala.NISHITA, Kala.MOONRISE}
-
-
-def _puja_time(raw: dict, kala: Kala) -> bool:
-    puja = bool(raw.get("puja_time", False))
-    if puja and (kala not in _PUJA_KALAS or raw.get("avoid_bhadra")):
-        raise ValueError(f"{raw['id']}: puja_time needs a muhurta kala and no Bhadra rule")
-    return puja
 
 
 def _lunar(raw: dict) -> LunarRule:
@@ -127,7 +118,7 @@ def _lunar(raw: dict) -> LunarRule:
         tie=TieBreak(raw.get("tie", _DEFAULT_TIE.get(kala, TieBreak.MAX_COVERAGE))),
         skip_amanta_months=frozenset(MONTH_IDS.index(m) for m in raw.get("skip_months", [])),
         avoid_bhadra=bool(raw.get("avoid_bhadra", False)),
-        puja_time=_puja_time(raw, kala),
+        puja=tuple(raw.get("puja", ())),
     )
 
 
@@ -139,6 +130,7 @@ def _solar(raw: dict) -> SolarRule:
         short_name=raw.get("short_name", raw["name"]),
         category=Category(raw.get("category", "observance")),
         sign=None if sign == "any" else SIGN_IDS.index(sign),
+        puja=tuple(raw.get("puja", ())),
     )
 
 

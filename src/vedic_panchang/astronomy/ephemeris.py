@@ -98,3 +98,13 @@ def next_rise_or_set(
     if result == _CIRCUMPOLAR:
         return None
     return times[0]
+
+
+def sidereal_ascendant(
+    jd_ut: float, latitude: float, longitude: float, ayanamsha: Ayanamsha
+) -> float:
+    """Return the sidereal longitude of the ascendant (Lagna) in degrees [0, 360)."""
+    with _lock:
+        swe.set_sid_mode(_SIDEREAL_MODES[ayanamsha], 0, 0)
+        _, ascmc = swe.houses_ex(jd_ut, latitude, longitude, b"W", swe.FLG_SIDEREAL)
+    return ascmc[0] % 360.0
