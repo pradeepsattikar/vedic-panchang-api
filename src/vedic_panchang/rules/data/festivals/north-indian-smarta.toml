@@ -9,12 +9,15 @@
 #      sunrise/moonrise, "max_coverage" otherwise.
 # If the Tithi prevails in the kala on neither day, the day it prevails at sunrise is used.
 # avoid_bhadra: time under Bhadra (Vishti karana) does not count towards the kala.
+# puja_time: report the kala on the observance day (while the Tithi prevails) as the puja
+#      time. Only for festivals where the kala alone is the customary muhurta (not e.g.
+#      Diwali, which also needs Sthir Lagna).
 #
 # short_name: label for tight spaces such as calendar cells (at most ~12 characters).
 #
 # Any change here MUST bump rule_version.
 
-rule_version = "2026.10.2"
+rule_version = "2026.10.3"
 
 # ── Major festivals ────────────────────────────────────────────────────────────
 
@@ -42,6 +45,7 @@ category = "major"
 amanta_month = "magha"
 tithi = 29
 kala = "nishita"
+puja_time = true
 
 [[lunar]]
 id = "holika-dahan"
@@ -78,6 +82,7 @@ category = "major"
 amanta_month = "chaitra"
 tithi = 9
 kala = "madhyahna"
+puja_time = true
 
 [[lunar]]
 id = "hanuman-jayanti"
@@ -151,6 +156,7 @@ category = "major"
 amanta_month = "shravana"
 tithi = 23
 kala = "nishita"
+puja_time = true
 
 [[lunar]]
 id = "hartalika-teej"
@@ -169,6 +175,7 @@ category = "major"
 amanta_month = "bhadrapada"
 tithi = 4
 kala = "madhyahna"
+puja_time = true
 
 [[lunar]]
 id = "anant-chaturdashi"
@@ -250,6 +257,7 @@ category = "major"
 amanta_month = "ashwin"
 tithi = 19
 kala = "moonrise"
+puja_time = true
 
 [[lunar]]
 id = "ahoi-ashtami"
@@ -304,6 +312,7 @@ category = "major"
 amanta_month = "kartika"
 tithi = 2
 kala = "aparahna"
+puja_time = true
 
 [[lunar]]
 id = "chhath-puja"
@@ -572,6 +581,7 @@ short_name = "Sankashti"
 amanta_month = "any"
 tithi = 19
 kala = "moonrise"
+puja_time = true
 
 [[lunar]]
 id = "vinayaka-chaturthi"
@@ -580,6 +590,7 @@ short_name = "Vinayaka"
 amanta_month = "any"
 tithi = 4
 kala = "madhyahna"
+puja_time = true
 skip_months = ["bhadrapada"]  # that day is Ganesh Chaturthi
 
 [[lunar]]
@@ -589,6 +600,7 @@ short_name = "Pradosh"
 amanta_month = "any"
 tithi = 13
 kala = "pradosh"
+puja_time = true
 
 [[lunar]]
 id = "krishna-pradosh"
@@ -597,6 +609,7 @@ short_name = "Pradosh"
 amanta_month = "any"
 tithi = 28
 kala = "pradosh"
+puja_time = true
 
 [[lunar]]
 id = "masik-shivaratri"
@@ -605,6 +618,7 @@ short_name = "Shivaratri"
 amanta_month = "any"
 tithi = 29
 kala = "nishita"
+puja_time = true
 skip_months = ["magha"]  # that night is Maha Shivaratri
 
 [[solar]]

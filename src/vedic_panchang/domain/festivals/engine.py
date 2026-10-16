@@ -41,6 +41,18 @@ SIGN_NAMES = (
 
 
 @dataclass(frozen=True)
+class PujaTime:
+    """The rule's kala on the observance day while the Tithi prevails.
+
+    Moonrise is an instant (start == end) and is reported even if the Tithi has ended.
+    """
+
+    kala: str
+    start: datetime
+    end: datetime
+
+
+@dataclass(frozen=True)
 class FestivalOccurrence:
     festival_id: str
     occurrence_id: str  # stable across locations (derived from a global instant)
@@ -52,6 +64,7 @@ class FestivalOccurrence:
     tithi: Span | None = None  # lunar rules: the Tithi with local start/end
     masa: LunarMonths | None = None
     sankranti_time: datetime | None = None  # solar rules
+    puja_time: PujaTime | None = None  # lunar rules that opt in
 
 
 def _matches(rule: LunarRule, inst: TithiInstance) -> bool:
@@ -120,6 +133,22 @@ def _tithi_span(inst: TithiInstance, frames: DayFrames) -> Span:
     )
 
 
+def _puja_time(
+    rule: LunarRule, inst: TithiInstance, day: date, frames: DayFrames
+) -> PujaTime | None:
+    frame = frames.frame(day)
+    window = frame and frames.window(frame, rule.kala)
+    if window is None:
+        return None
+    start, end = window
+    if start != end:  # a span: only while the Tithi prevails
+        start, end = max(start, inst.start_jd), min(end, inst.end_jd)
+        if start >= end:
+            return None
+    tz = frames.tz
+    return PujaTime(kala=rule.kala.value, start=from_jd(start, tz), end=from_jd(end, tz))
+
+
 def _lunar_occurrences(rule, instances, frames, profile) -> list[FestivalOccurrence]:
     result = []
     for inst in instances:
@@ -139,6 +168,7 @@ def _lunar_occurrences(rule, instances, frames, profile) -> list[FestivalOccurre
                 kala=rule.kala.value,
                 tithi=_tithi_span(inst, frames),
                 masa=inst.months,
+                puja_time=_puja_time(rule, inst, day, frames) if rule.puja_time else None,
             )
         )
     return result

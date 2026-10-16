@@ -108,6 +108,12 @@ class LunarMonthsOut(_Model):
     purnimanta: MasaOut
 
 
+class PujaTimeOut(_Model):
+    kala: str = Field(description="pradosh | madhyahna | aparahna | nishita | moonrise")
+    start: datetime
+    end: datetime = Field(description="Equal to start for an instant (moonrise)")
+
+
 class FestivalOut(_Model):
     festival_id: str
     occurrence_id: str = Field(description="Stable across locations")
@@ -121,6 +127,11 @@ class FestivalOut(_Model):
     tithi: SpanOut | None = Field(None, description="The Tithi with local start and end")
     masa: LunarMonthsOut | None = None
     sankranti_time: datetime | None = Field(None, description="Solar festivals: Sun's ingress")
+    puja_time: PujaTimeOut | None = Field(
+        None,
+        description="The kala on the observance day while the Tithi prevails, for festivals "
+        "where it is the customary puja time; absent otherwise",
+    )
 
 
 class DayWindowOut(_Model):
