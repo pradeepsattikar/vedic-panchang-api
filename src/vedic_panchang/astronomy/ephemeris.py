@@ -32,6 +32,11 @@ class RiseSet(StrEnum):
 _BODY_IDS = {Body.SUN: swe.SUN, Body.MOON: swe.MOON}
 _SIDEREAL_MODES = {Ayanamsha.LAHIRI: swe.SIDM_LAHIRI}
 _RISE_SET_FLAGS = {RiseSet.RISE: swe.CALC_RISE, RiseSet.SET: swe.CALC_SET}
+# The Sun rises/sets at its upper limb with refraction (verified against Drik Panchang).
+# Drik Panchang times the Moon at the centre of its disc, without refraction: with these flags
+# moonrise/moonset match Drik within a minute (was 5-8 minutes; checked 2026-10-17 for London,
+# Vancouver, Toronto, New York and Mumbai).
+_BODY_RISE_SET_BITS = {Body.SUN: 0, Body.MOON: swe.BIT_DISC_CENTER | swe.BIT_NO_REFRACTION}
 
 # Built-in Moshier ephemeris: needs no data files and is the configuration that was
 # verified against Drik Panchang (all elements within 1 minute).
@@ -89,7 +94,7 @@ def next_rise_or_set(
         result, times = swe.rise_trans(
             jd_ut_start,
             _BODY_IDS[body],
-            _RISE_SET_FLAGS[event],
+            _RISE_SET_FLAGS[event] | _BODY_RISE_SET_BITS[body],
             (longitude, latitude, altitude_m),
             _PRESSURE_HPA,
             _TEMPERATURE_C,

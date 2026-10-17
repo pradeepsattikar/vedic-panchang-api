@@ -110,9 +110,9 @@ def test_arizona_does_not_observe_dst(daily):
 @pytest.mark.parametrize(
     ("place", "day", "event", "next_time"),
     [
-        (MUMBAI, "2026-10-10", "moonrise", "2026-10-11T06:55"),  # Amavasya
-        (LONDON, "2026-11-08", "moonrise", "2026-11-09T07:40"),
-        (LONDON, "2026-11-23", "moonset", "2026-11-24T07:43"),
+        (MUMBAI, "2026-10-10", "moonrise", "2026-10-11T06:59"),  # Amavasya
+        (LONDON, "2026-11-08", "moonrise", "2026-11-09T07:47"),
+        (LONDON, "2026-11-23", "moonset", "2026-11-24T07:36"),
     ],
 )
 def test_no_moon_event_reports_no_event_with_next_time(daily, place, day, event, next_time):
@@ -123,8 +123,8 @@ def test_no_moon_event_reports_no_event_with_next_time(daily, place, day, event,
 
 
 @pytest.mark.parametrize(("day", "expected"), [
-    ("2026-11-02", "2026-11-03T01:11"),
-    ("2026-11-04", "2026-11-05T03:02"),
+    ("2026-11-02", "2026-11-03T01:15"),
+    ("2026-11-04", "2026-11-05T03:06"),
 ])  # fmt: skip
 def test_moonrise_before_next_sunrise_carries_next_date(daily, day, expected):
     moonrise = daily(day, **MUMBAI)["moon"]["moonrise"]

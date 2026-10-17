@@ -11,7 +11,7 @@ default_profile = "north-indian-smarta"
 
 [profiles.north-indian-smarta]
 name = "North Indian (Purnimanta), Smarta observance"
-rule_version = "2026.10.1"
+rule_version = "2026.10.2"  # 2026-10-17: Moon rises/sets at disc centre, no refraction (Drik)
 ayanamsha = "lahiri"
 month_system = "purnimanta"
 festival_convention = "smarta"

@@ -2,8 +2,8 @@
 
 Values were read manually from drikpanchang.com on 2026-10-10 for the same GeoNames city
 IDs (see notes/discussion_2026-10-10_engine_verification.md in the planning repository).
-Tolerance: timings within 1 minute; names exact. Moonrise/moonset within 6 minutes
-(known lunar-parallax difference, accepted for Phase 1).
+Tolerance: timings within 1 minute; names exact. Moonrise/moonset within 2 minutes
+(Drik times the Moon at the centre of its disc without refraction; we do the same).
 
 To add a reference case: read the values from Drik Panchang for a city ID in our
 catalogue and add an entry below. Do not scrape the site.
@@ -53,7 +53,7 @@ REFERENCE = {
 }  # fmt: skip
 
 TIMING_IDS = ("rahu_kalam", "yamaganda", "gulika_kalam", "abhijit_muhurta", "brahma_muhurta")
-MOON_TOLERANCE_MIN = 6
+MOON_TOLERANCE_MIN = 2
 
 
 @pytest.fixture(scope="module", params=sorted(REFERENCE))
@@ -99,7 +99,7 @@ def test_moonrise(case):
     ref, body = case
     moonrise = body["moon"]["moonrise"]
     if ref["moonrise"] is None:
-        # Moonrise 06:01 IST is before sunrise; the next (06:55 Oct 11) is after the next
+        # Moonrise ~06:0x IST is before sunrise; the next (06:59 Oct 11) is after the next
         # sunrise, so there is none within the Panchang day.
         assert moonrise["status"] == "no_event"
         assert moonrise["time"] is None
@@ -108,7 +108,8 @@ def test_moonrise(case):
 
 
 def test_moonrise_after_midnight_belongs_to_previous_panchang_day(daily):
-    # Drik Panchang, Mumbai 2026-11-03: moonrise 02:08 AM on Nov 4 (checked by the founder).
+    # Drik Panchang, Mumbai 2026-11-03: moonrise 02:12 AM on Nov 4 (re-read 2026-10-17; the
+    # 02:08 noted earlier was that day's moonset, 02:08 PM).
     moonrise = daily("2026-11-03", city_id="1275339")["moon"]["moonrise"]
     assert moonrise["status"] == "occurs"
-    assert minutes_apart(moonrise["time"], "2026-11-04T02:08") <= 1
+    assert minutes_apart(moonrise["time"], "2026-11-04T02:12") <= 1
