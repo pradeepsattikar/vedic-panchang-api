@@ -14,7 +14,7 @@ AngleFn = Callable[[float], float]  # Julian day (UT) -> angle in degrees [0, 36
 # lasts about 1.1 days, and within 2 days no angle moves anywhere near 180 degrees, so
 # angles can be unwrapped unambiguously around the reference.
 _SEARCH_DAYS = 2.0
-_BISECTION_STEPS = 32  # 2 days / 2**32 is well under a millisecond
+_BISECTION_STEPS = 40  # 33 days / 2**40 is well under a millisecond
 
 
 @dataclass(frozen=True)
@@ -42,23 +42,32 @@ def _crossing(angle_fn: AngleFn, lo: float, hi: float, ref_angle: float, target:
     return (lo + hi) / 2.0
 
 
-def _span_at(angle_fn: AngleFn, segment_deg: float, count: int, jd: float) -> RawSpan:
+def _span_at(
+    angle_fn: AngleFn, segment_deg: float, count: int, jd: float, search_days: float
+) -> RawSpan:
     angle = angle_fn(jd)
     index = int(angle // segment_deg) % count
-    start = _crossing(angle_fn, jd - _SEARCH_DAYS, jd, angle, index * segment_deg)
-    end = _crossing(angle_fn, jd, jd + _SEARCH_DAYS, angle, (index + 1) * segment_deg)
+    start = _crossing(angle_fn, jd - search_days, jd, angle, index * segment_deg)
+    end = _crossing(angle_fn, jd, jd + search_days, angle, (index + 1) * segment_deg)
     return RawSpan(index, start, end)
 
 
 def spans_over(
-    angle_fn: AngleFn, segment_deg: float, window_start: float, window_end: float
+    angle_fn: AngleFn,
+    segment_deg: float,
+    window_start: float,
+    window_end: float,
+    search_days: float = _SEARCH_DAYS,
 ) -> list[RawSpan]:
-    """All segments overlapping [window_start, window_end), in time order."""
+    """All segments overlapping [window_start, window_end), in time order.
+
+    ``search_days`` must exceed the longest span (e.g. ~31 days for the Sun's Rashi) while the
+    angle moves well under 180 degrees in that time."""
     count = round(360.0 / segment_deg)
-    spans = [_span_at(angle_fn, segment_deg, count, window_start)]
+    spans = [_span_at(angle_fn, segment_deg, count, window_start, search_days)]
     while spans[-1].end_jd < window_end:
         previous = spans[-1]
-        nxt = _span_at(angle_fn, segment_deg, count, previous.end_jd + 1e-6)
+        nxt = _span_at(angle_fn, segment_deg, count, previous.end_jd + 1e-6, search_days)
         # The next span starts exactly where the previous one ended.
         spans.append(RawSpan(nxt.index, previous.end_jd, nxt.end_jd))
     return spans

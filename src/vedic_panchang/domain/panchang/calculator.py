@@ -30,6 +30,7 @@ from vedic_panchang.domain.panchang.models import (
     EventStatus,
     Span,
     Vara,
+    YearInfo,
 )
 from vedic_panchang.domain.panchang.spans import RawSpan, spans_over
 from vedic_panchang.domain.panchang.timings import day_timings
@@ -39,6 +40,7 @@ TITHI_DEG = 12.0
 KARANA_DEG = 6.0
 NAKSHATRA_DEG = 360.0 / 27.0
 YOGA_DEG = 360.0 / 27.0
+RASHI_DEG = 30.0
 
 _NO_SUNRISE = "The Sun does not rise on this date at this location"
 
@@ -119,9 +121,9 @@ class _Calculation:
 
     # ── elements ─────────────────────────────────────────────
     def element(
-        self, angle_fn, segment_deg: float, window: DayWindow, window_jd, make_span
+        self, angle_fn, segment_deg: float, window: DayWindow, window_jd, make_span, search_days=2.0
     ) -> Element:
-        raw = spans_over(angle_fn, segment_deg, *window_jd)
+        raw = spans_over(angle_fn, segment_deg, *window_jd, search_days=search_days)
         spans = tuple(make_span(r) for r in raw)
         if window.basis is DayWindowBasis.SUNRISE_TO_NEXT_SUNRISE:
             return Element(at_sunrise=spans[0], spans=spans)
@@ -181,6 +183,7 @@ class _Calculation:
         moonset, _ = self.celestial_event(moon, set_, window_jd, window_name=moon_window_name)
 
         weekday = self.day.weekday()
+        masa = lunar_months(self.elongation, self.sun_longitude, window_jd[0])
         return DailyPanchang(
             date=self.day,
             vara=Vara(
@@ -188,7 +191,7 @@ class _Calculation:
                 id=names.slug(names.VARAS[weekday]),
                 name=names.VARAS[weekday],
             ),
-            masa=lunar_months(self.elongation, self.sun_longitude, window_jd[0]),
+            masa=masa,
             day_window=window,
             sunrise=sunrise,
             sunset=sunset,
@@ -207,6 +210,37 @@ class _Calculation:
             ),
             karana=self.element(self.elongation, KARANA_DEG, window, window_jd, self.karana_span),
             timings=day_timings(sunrise_jd, sunset_jd, weekday, self.profile, self.local),
+            # The Sun stays ~30 days in a Rashi, the Moon ~2.5 days.
+            sun_sign=self.element(
+                self.sun_longitude,
+                RASHI_DEG,
+                window,
+                window_jd,
+                self.named_span(names.RASHIS),
+                search_days=33.0,
+            ),
+            moon_sign=self.element(
+                self.moon_longitude,
+                RASHI_DEG,
+                window,
+                window_jd,
+                self.named_span(names.RASHIS),
+                search_days=3.0,
+            ),  # fmt: skip
+            year=self.year_info(masa.amanta.number, self.sun_longitude(window_jd[0])),
+        )
+
+    def year_info(self, amanta_month: int, sun_longitude: float) -> YearInfo:
+        """The Samvat year turns at Chaitra Shukla Pratipada (the start of Amanta Chaitra):
+        January to April dates still in Pausha, Magha or Phalguna belong to the old year."""
+        old_year = self.day.month <= 4 and amanta_month >= 10
+        vikram = self.day.year + (56 if old_year else 57)
+        uttarayana = int(sun_longitude // 30) in (9, 10, 11, 0, 1, 2)
+        return YearInfo(
+            vikram_samvat=vikram,
+            shaka_samvat=vikram - 135,
+            ritu=names.RITUS[(amanta_month - 1) // 2],
+            ayana="Uttarayana" if uttarayana else "Dakshinayana",
         )
 
 

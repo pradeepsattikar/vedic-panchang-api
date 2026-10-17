@@ -166,6 +166,13 @@ class RequestContextOut(BaseModel):
     profile: str
 
 
+class YearInfoOut(_Model):
+    vikram_samvat: int = Field(description="Begins at Chaitra Shukla Pratipada")
+    shaka_samvat: int = Field(description="Shalivahana Shaka; begins at Chaitra Shukla Pratipada")
+    ritu: str = Field(description="Vedic Ritu by lunar month")
+    ayana: str = Field(description="Uttarayana (Sun in Makara..Mithuna, sidereal) or Dakshinayana")
+
+
 class DailyPanchangOut(BaseModel):
     request: RequestContextOut
     date: date
@@ -178,6 +185,7 @@ class DailyPanchangOut(BaseModel):
     generated_at: datetime
     vara: VaraOut
     masa: LunarMonthsOut = Field(description="Lunar month at sunrise in both systems")
+    year: YearInfoOut | None = Field(None, description="Samvat years, Ritu and Ayana at sunrise")
     day_window: DayWindowOut
     sun: SunOut
     moon: MoonOut
@@ -185,6 +193,10 @@ class DailyPanchangOut(BaseModel):
     nakshatra: ElementOut
     yoga: ElementOut
     karana: ElementOut
+    sun_sign: ElementOut | None = Field(None, description="Sidereal Rashi of the Sun, with changes")
+    moon_sign: ElementOut | None = Field(
+        None, description="Sidereal Rashi of the Moon, with changes"
+    )
     timings: list[TimingOut]
     observances: list[FestivalOut] = Field(description="Festivals and observances on this date")
     festival_rule_version: str
