@@ -34,3 +34,15 @@ def test_samvat_year_boundary(daily):
 def test_ritu_follows_the_lunar_month(daily):
     assert daily("2026-04-10", **MUMBAI)["year"]["ritu"] == "Vasanta"  # Chaitra
     assert daily("2026-01-15", **MUMBAI)["year"]["ritu"] == "Hemanta"  # Pausha
+
+
+def test_sun_and_moon_rashi_and_nakshatra_match_drik(daily):
+    # Drik: Toronto 2026-10-17 Surya Nakshatra Chitra, Moon sign Dhanu;
+    # Mumbai 2026-11-08 Sun sign Tula, Surya Nakshatra Vishakha, Moon sign Tula.
+    toronto = daily("2026-10-17", **TORONTO)
+    assert toronto["sun_nakshatra"]["at_sunrise"]["name"] == "Chitra"
+    assert toronto["moon_sign"]["at_sunrise"]["name"] == "Dhanu"
+    mumbai = daily("2026-11-08", **MUMBAI)
+    assert mumbai["sun_sign"]["at_sunrise"]["name"] == "Tula"
+    assert mumbai["sun_nakshatra"]["at_sunrise"]["name"] == "Vishakha"
+    assert mumbai["moon_sign"]["at_sunrise"]["name"] == "Tula"

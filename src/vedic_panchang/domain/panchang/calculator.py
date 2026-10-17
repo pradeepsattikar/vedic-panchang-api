@@ -226,7 +226,16 @@ class _Calculation:
                 window_jd,
                 self.named_span(names.RASHIS),
                 search_days=3.0,
-            ),  # fmt: skip
+            ),
+            # The Sun stays ~13.5 days in a Nakshatra.
+            sun_nakshatra=self.element(
+                self.sun_longitude,
+                NAKSHATRA_DEG,
+                window,
+                window_jd,
+                self.named_span(names.NAKSHATRAS),
+                search_days=16.0,
+            ),
             year=self.year_info(masa.amanta.number, self.sun_longitude(window_jd[0])),
         )
 

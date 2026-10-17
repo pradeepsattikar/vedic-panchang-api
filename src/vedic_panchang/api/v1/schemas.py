@@ -197,6 +197,9 @@ class DailyPanchangOut(BaseModel):
     moon_sign: ElementOut | None = Field(
         None, description="Sidereal Rashi of the Moon, with changes"
     )
+    sun_nakshatra: ElementOut | None = Field(
+        None, description="The Sun's Nakshatra (Surya Nakshatra), with changes"
+    )
     timings: list[TimingOut]
     observances: list[FestivalOut] = Field(description="Festivals and observances on this date")
     festival_rule_version: str

@@ -107,4 +107,5 @@ class DailyPanchang:
     timings: tuple[TimingInterval, ...]
     sun_sign: Element | None = None  # sidereal Rashi of the Sun, with changes (Sankranti)
     moon_sign: Element | None = None  # sidereal Rashi of the Moon, with changes
+    sun_nakshatra: Element | None = None  # the Sun's Nakshatra (Surya Nakshatra), with changes
     year: YearInfo | None = None
