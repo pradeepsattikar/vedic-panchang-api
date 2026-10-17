@@ -81,6 +81,16 @@ class Vara:
 
 
 @dataclass(frozen=True)
+class YearInfo:
+    """Samvat years, Ritu and Ayana at sunrise."""
+
+    vikram_samvat: int  # begins at Chaitra Shukla Pratipada
+    shaka_samvat: int  # Shalivahana Shaka, begins at Chaitra Shukla Pratipada
+    ritu: str  # Vedic Ritu by lunar month
+    ayana: str  # Uttarayana while the Sun is in Makara..Mithuna (sidereal), else Dakshinayana
+
+
+@dataclass(frozen=True)
 class DailyPanchang:
     date: date
     vara: Vara
@@ -95,3 +105,6 @@ class DailyPanchang:
     yoga: Element
     karana: Element
     timings: tuple[TimingInterval, ...]
+    sun_sign: Element | None = None  # sidereal Rashi of the Sun, with changes (Sankranti)
+    moon_sign: Element | None = None  # sidereal Rashi of the Moon, with changes
+    year: YearInfo | None = None

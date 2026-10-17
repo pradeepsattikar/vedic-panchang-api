@@ -63,3 +63,12 @@ def karana_name(karana_index: int) -> str:
     if karana_index >= 57:
         return _FIXED_KARANAS_END[karana_index - 57]
     return _MOVABLE_KARANAS[(karana_index - 1) % 7]
+
+
+RASHIS = (
+    "Mesha", "Vrishabha", "Mithuna", "Karka", "Simha", "Kanya",
+    "Tula", "Vrishchika", "Dhanu", "Makara", "Kumbha", "Meena",
+)  # fmt: skip
+
+# Vedic Ritu by (Amanta) lunar month: Chaitra-Vaishakha Vasanta ... Magha-Phalguna Shishira.
+RITUS = ("Vasanta", "Grishma", "Varsha", "Sharad", "Hemanta", "Shishira")

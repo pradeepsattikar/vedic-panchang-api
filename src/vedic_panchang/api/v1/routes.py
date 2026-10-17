@@ -82,6 +82,9 @@ def daily_panchang(
         nakshatra=schemas.ElementOut.model_validate(p.nakshatra),
         yoga=schemas.ElementOut.model_validate(p.yoga),
         karana=schemas.ElementOut.model_validate(p.karana),
+        sun_sign=schemas.ElementOut.model_validate(p.sun_sign),
+        moon_sign=schemas.ElementOut.model_validate(p.moon_sign),
+        year=schemas.YearInfoOut.model_validate(p.year),
         timings=[schemas.TimingOut.model_validate(t) for t in p.timings],
         observances=[schemas.FestivalOut.model_validate(o) for o in result.observances],
     )
