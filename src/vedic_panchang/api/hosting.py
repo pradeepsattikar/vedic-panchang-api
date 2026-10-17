@@ -80,8 +80,9 @@ class RateLimit:
 
 
 class ResponseHeaders:
-    """Security headers on every response; successful /v1 answers may be cached for an hour
-    (values are deterministic for a given city, date and rule version)."""
+    """Security headers on every response. Successful /v1 answers may be reused by browsers for
+    a minute only: values are deterministic, but a deploy can add fields or change rules, and
+    the app's service worker already keeps its own offline copy."""
 
     def __init__(self, app: ASGIApp):
         self.app = app
@@ -98,7 +99,7 @@ class ResponseHeaders:
                 headers.append((b"x-content-type-options", b"nosniff"))
                 headers.append((b"referrer-policy", b"no-referrer"))
                 if cacheable and message["status"] == 200:
-                    headers.append((b"cache-control", b"public, max-age=3600"))
+                    headers.append((b"cache-control", b"public, max-age=60"))
                 message["headers"] = headers
             await send(message)
 

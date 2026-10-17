@@ -35,7 +35,7 @@ def test_no_limit_by_default_and_cacheable_answers():
     for _ in range(20):
         response = client.get("/v1/meta")
     assert response.status_code == 200
-    assert response.headers["cache-control"] == "public, max-age=3600"
+    assert response.headers["cache-control"] == "public, max-age=60"
     assert response.headers["x-content-type-options"] == "nosniff"
     error = client.get("/v1/cities/0")
     assert "cache-control" not in error.headers
