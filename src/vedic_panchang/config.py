@@ -19,6 +19,10 @@ class Settings:
     cache_size: int = 4096
     cities_path: Path = field(default_factory=_default_cities_path)
     cors_origins: tuple[str, ...] = ("*",)
+    # Requests per client per minute; 0 = no limit (local development).
+    rate_limit_per_minute: int = 0
+    # Behind a hosting load balancer: take the client address from X-Forwarded-For.
+    trust_proxy: bool = False
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -32,4 +36,6 @@ class Settings:
             cors_origins=tuple(
                 o.strip() for o in env.get("VP_CORS_ORIGINS", "*").split(",") if o.strip()
             ),
+            rate_limit_per_minute=int(env.get("VP_RATE_LIMIT_PER_MINUTE", 0)),
+            trust_proxy=env.get("VP_TRUST_PROXY", "") == "1",
         )

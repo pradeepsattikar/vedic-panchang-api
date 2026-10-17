@@ -18,5 +18,6 @@ COPY --from=build /app /app
 ENV PATH="/app/.venv/bin:$PATH"
 USER panchang
 EXPOSE 8000
-HEALTHCHECK CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"
-CMD ["uvicorn", "vedic_panchang.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Hosting platforms (e.g. Cloud Run) choose the port through $PORT.
+HEALTHCHECK CMD python -c "import os, urllib.request; urllib.request.urlopen(f'http://localhost:{os.environ.get(\"PORT\", \"8000\")}/health')"
+CMD ["sh", "-c", "exec uvicorn vedic_panchang.main:app --host 0.0.0.0 --port ${PORT:-8000}"]

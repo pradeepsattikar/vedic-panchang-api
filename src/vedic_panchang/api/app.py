@@ -4,6 +4,7 @@ from fastapi.responses import RedirectResponse
 
 from vedic_panchang import __version__
 from vedic_panchang.api.errors import register_error_handlers
+from vedic_panchang.api.hosting import RateLimit, ResponseHeaders
 from vedic_panchang.api.v1.routes import router as v1_router
 from vedic_panchang.config import Settings
 from vedic_panchang.infra.city_repository import CityRepository
@@ -37,6 +38,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     app.add_middleware(
         CORSMiddleware, allow_origins=list(settings.cors_origins), allow_methods=["GET"]
+    )
+    app.add_middleware(ResponseHeaders)
+    # Outermost: refuse floods before any work is done.
+    app.add_middleware(
+        RateLimit,
+        per_minute=settings.rate_limit_per_minute,
+        trust_proxy=settings.trust_proxy,
     )
     register_error_handlers(app)
     app.include_router(v1_router)
