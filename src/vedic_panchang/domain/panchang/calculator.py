@@ -20,6 +20,7 @@ from vedic_panchang.astronomy import ephemeris as eph
 from vedic_panchang.astronomy.julian import from_jd, to_jd
 from vedic_panchang.domain.location import Location
 from vedic_panchang.domain.panchang import names
+from vedic_panchang.domain.panchang.grahas import graha_positions
 from vedic_panchang.domain.panchang.masa import lunar_months
 from vedic_panchang.domain.panchang.models import (
     CelestialEvent,
@@ -237,6 +238,12 @@ class _Calculation:
                 search_days=16.0,
             ),
             year=self.year_info(masa.amanta.number, self.sun_longitude(window_jd[0])),
+            grahas=graha_positions(
+                window_jd[0],
+                self.local(window_jd[0]),
+                self.profile.ayanamsha,
+                self.profile.lunar_node,
+            ),
         )
 
     def year_info(self, amanta_month: int, sun_longitude: float) -> YearInfo:

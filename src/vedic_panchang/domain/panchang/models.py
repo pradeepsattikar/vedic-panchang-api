@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from enum import StrEnum
 
+from vedic_panchang.domain.panchang.grahas import GrahaPositions
 from vedic_panchang.domain.panchang.masa import LunarMonths
 
 
@@ -109,3 +110,4 @@ class DailyPanchang:
     moon_sign: Element | None = None  # sidereal Rashi of the Moon, with changes
     sun_nakshatra: Element | None = None  # the Sun's Nakshatra (Surya Nakshatra), with changes
     year: YearInfo | None = None
+    grahas: GrahaPositions | None = None  # the nine grahas at sunrise

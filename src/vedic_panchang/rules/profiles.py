@@ -29,6 +29,7 @@ class CalculationProfile:
     day_anchor: str
     festival_set: str
     abhijit_excluded_weekdays: frozenset[int]
+    lunar_node: str  # "mean" or "true": how Rahu and Ketu are calculated
     # period id -> 7-tuple of 1-based day parts, indexed by Python weekday (Monday = 0)
     day_periods: tuple[tuple[str, tuple[int, ...]], ...]
 
@@ -58,8 +59,15 @@ def _parse(profile_id: str, raw: dict) -> CalculationProfile:
         abhijit_excluded_weekdays=frozenset(
             WEEKDAYS.index(day) for day in raw.get("abhijit_excluded_weekdays", [])
         ),
+        lunar_node=_lunar_node(profile_id, raw.get("lunar_node", "mean")),
         day_periods=tuple(periods),
     )
+
+
+def _lunar_node(profile_id: str, value: str) -> str:
+    if value not in ("mean", "true"):
+        raise ValueError(f"{profile_id}: lunar_node must be 'mean' or 'true'")
+    return value
 
 
 @dataclass(frozen=True)

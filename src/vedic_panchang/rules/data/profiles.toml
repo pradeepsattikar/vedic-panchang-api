@@ -11,7 +11,7 @@ default_profile = "north-indian-smarta"
 
 [profiles.north-indian-smarta]
 name = "North Indian (Purnimanta), Smarta observance"
-rule_version = "2026.10.2"  # 2026-10-17: Moon rises/sets at disc centre, no refraction (Drik)
+rule_version = "2026.10.3"  # 2026-10-18: Graha positions with mean Rahu/Ketu (Drik default)
 ayanamsha = "lahiri"
 month_system = "purnimanta"
 festival_convention = "smarta"
@@ -21,6 +21,9 @@ festival_set = "north-indian-smarta"  # rules/data/festivals/<set>.toml
 # Weekdays on which Abhijit Muhurta is avoided (reported as not applicable).
 # Wednesday: matches Drik Panchang, confirmed by the founder 2026-10-12 (D08).
 abhijit_excluded_weekdays = ["wednesday"]
+
+# Rahu and Ketu from the mean lunar node ("mean"), as Drik Panchang shows by default; or "true".
+lunar_node = "mean"
 
 [profiles.north-indian-smarta.day_periods.rahu_kalam]
 monday = 2

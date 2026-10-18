@@ -18,8 +18,13 @@ import swisseph as swe
 class Body(StrEnum):
     SUN = "sun"
     MOON = "moon"
-    VENUS = "venus"
+    MARS = "mars"
+    MERCURY = "mercury"
     JUPITER = "jupiter"
+    VENUS = "venus"
+    SATURN = "saturn"
+    MEAN_NODE = "mean_node"  # Rahu (mean lunar node); Ketu is opposite
+    TRUE_NODE = "true_node"  # Rahu (true, osculating lunar node)
 
 
 class Ayanamsha(StrEnum):
@@ -34,8 +39,13 @@ class RiseSet(StrEnum):
 _BODY_IDS = {
     Body.SUN: swe.SUN,
     Body.MOON: swe.MOON,
-    Body.VENUS: swe.VENUS,
+    Body.MARS: swe.MARS,
+    Body.MERCURY: swe.MERCURY,
     Body.JUPITER: swe.JUPITER,
+    Body.VENUS: swe.VENUS,
+    Body.SATURN: swe.SATURN,
+    Body.MEAN_NODE: swe.MEAN_NODE,
+    Body.TRUE_NODE: swe.TRUE_NODE,
 }
 _SIDEREAL_MODES = {Ayanamsha.LAHIRI: swe.SIDM_LAHIRI}
 _RISE_SET_FLAGS = {RiseSet.RISE: swe.CALC_RISE, RiseSet.SET: swe.CALC_SET}
@@ -158,3 +168,15 @@ def planet_position(jd_ut: float, body: Body) -> PlanetPosition:
     with _lock:
         values = swe.calc_ut(jd_ut, _BODY_IDS[body], _EPHEMERIS_FLAG)[0]
     return PlanetPosition(longitude=values[0], distance_au=values[2])
+
+
+def sidereal_longitude_and_speed(
+    jd_ut: float, body: Body, ayanamsha: Ayanamsha
+) -> tuple[float, float]:
+    """Sidereal geocentric longitude (degrees [0, 360)) and its daily speed (negative while
+    the body is retrograde)."""
+    flags = _EPHEMERIS_FLAG | swe.FLG_SIDEREAL | swe.FLG_SPEED
+    with _lock:
+        swe.set_sid_mode(_SIDEREAL_MODES[ayanamsha], 0, 0)
+        values = swe.calc_ut(jd_ut, _BODY_IDS[body], flags)[0]
+    return values[0] % 360.0, values[3]
