@@ -89,9 +89,6 @@ dates in different cities; `occurrence_id` stays the same everywhere.
 
 ## Conventions
 
-Every calculation rule (Panchang elements, timings, festival dates, puja times, muhurtas) is
-explained in plain English in [docs/CALCULATIONS.md](docs/CALCULATIONS.md).
-
 | Topic | Convention |
 |---|---|
 | Ayanamsha | Lahiri (Chitrapaksha) |
