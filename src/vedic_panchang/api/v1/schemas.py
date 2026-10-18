@@ -173,6 +173,26 @@ class YearInfoOut(_Model):
     ayana: str = Field(description="Uttarayana (Sun in Makara..Mithuna, sidereal) or Dakshinayana")
 
 
+class GrahaOut(_Model):
+    id: str = Field(description="surya, chandra, mangal, budha, guru, shukra, shani, rahu, ketu")
+    name: str = Field(description="Sanskrit name")
+    english: str
+    longitude: float = Field(description="Sidereal (Lahiri) longitude, degrees 0-360")
+    rashi_number: int = Field(description="1 = Mesha ... 12 = Meena")
+    rashi: str
+    degree_in_rashi: float = Field(description="Degrees within the Rashi, 0-30")
+    nakshatra_number: int = Field(description="1 = Ashwini ... 27 = Revati")
+    nakshatra: str
+    pada: int = Field(description="Quarter of the Nakshatra, 1-4")
+    retrograde: bool = Field(description="Vakri: the longitude is decreasing")
+
+
+class GrahaPositionsOut(_Model):
+    at: datetime = Field(description="Instant of the positions: sunrise of the Panchang day")
+    lunar_node: str = Field(description="Rahu/Ketu from the 'mean' or 'true' lunar node")
+    grahas: list[GrahaOut]
+
+
 class DailyPanchangOut(BaseModel):
     request: RequestContextOut
     date: date
@@ -199,6 +219,9 @@ class DailyPanchangOut(BaseModel):
     )
     sun_nakshatra: ElementOut | None = Field(
         None, description="The Sun's Nakshatra (Surya Nakshatra), with changes"
+    )
+    grahas: GrahaPositionsOut | None = Field(
+        None, description="Positions of the nine grahas at sunrise (facts only)"
     )
     timings: list[TimingOut]
     observances: list[FestivalOut] = Field(description="Festivals and observances on this date")
