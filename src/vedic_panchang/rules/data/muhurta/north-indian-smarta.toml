@@ -1,0 +1,56 @@
+# General muhurta rules (Panchang Shuddhi only): no personal birth chart, no Lagna Shuddhi.
+# Calibrated against Drik Panchang's 2026 lists for Ottawa (tests/test_muhurta.py).
+#
+# nakshatras: allowed Nakshatras. tithis: allowed Tithi numbers (1-15 Shukla, 16-30 Krishna).
+# weekdays_excluded: by the weekday of the Panchang day (sunrise to sunrise).
+# lunar_months: allowed Amanta months ("any" = all). Adhika months are never allowed.
+# solar_months_excluded: the Sun's sidereal signs to avoid (Kharmas = dhanu, meena).
+# yogas_excluded / avoid_bhadra / avoid_gandanta / avoid_chaturmas: time within the day to drop.
+# asta: planets that must not be combust (Guru = jupiter, Shukra = venus).
+#
+# Any change here MUST bump rule_version.
+
+rule_version = "2026.10.1"
+min_minutes = 5
+
+[asta]
+# Kalamsha: the gap between the planet's and the Sun's setting (evening star) or rising (morning
+# star), in degrees of time (4 minutes = 1 degree), at the place. Below the limit the planet is asta.
+# Jupiter's limit reproduces Drik's published Guru asta 2026 (start and end); Venus follows the
+# classical 10, and 8 while it nears inferior conjunction (Drik's Shukra asta 2026).
+jupiter = 18.0
+venus = 10.0
+venus_near_inferior_conjunction = 8.0
+
+[[purpose]]
+id = "vivah"
+name = "Vivah"
+description = "Marriage"
+nakshatras = ["rohini", "mrigashira", "magha", "uttara-phalguni", "hasta", "swati", "anuradha",
+              "mula", "uttara-ashadha", "uttara-bhadrapada", "revati"]
+tithis = [3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 24, 25, 26, 27, 28]
+weekdays_excluded = []
+lunar_months = "any"
+solar_months_excluded = ["dhanu", "meena"]
+yogas_excluded = ["vishkambha", "atiganda", "shula", "ganda", "vyaghata", "vajra", "vyatipata",
+                  "parigha", "vaidhriti"]
+avoid_bhadra = true
+avoid_gandanta = true
+avoid_chaturmas = true
+asta = ["jupiter", "venus"]
+
+[[purpose]]
+id = "griha-pravesh"
+name = "Griha Pravesh"
+description = "Entering a new home (Vastu)"
+nakshatras = ["rohini", "mrigashira", "uttara-phalguni", "chitra", "anuradha", "uttara-ashadha",
+              "uttara-bhadrapada", "revati"]
+tithis = [2, 3, 5, 7, 10, 11, 13, 17, 18, 20, 22, 25, 26]
+weekdays_excluded = ["sunday", "tuesday"]
+lunar_months = ["magha", "phalguna", "vaishakha", "jyeshtha", "kartika", "margashirsha"]
+solar_months_excluded = []
+yogas_excluded = []
+avoid_bhadra = false
+avoid_gandanta = false
+avoid_chaturmas = false
+asta = ["jupiter", "venus"]

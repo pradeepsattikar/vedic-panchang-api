@@ -207,6 +207,55 @@ def get_city(service: Service, city_id: str):
     return service.city(city_id)
 
 
+@router.get("/muhurta/purposes", response_model=list[schemas.MuhurtaPurposeOut], tags=["muhurta"])
+def muhurta_purposes(service: Service):
+    """The purposes general muhurtas can be found for."""
+    return [schemas.MuhurtaPurposeOut.model_validate(p) for p in service.muhurta_purposes()]
+
+
+@router.get("/muhurta", response_model=schemas.MuhurtaOut, tags=["muhurta"])
+def muhurta(
+    service: Service,
+    place: PlaceParam,
+    purpose: Annotated[str, Query(description="Purpose ID from /v1/muhurta/purposes")],
+    from_date: Annotated[
+        date | None, Query(alias="from", description="First date (default: today there)")
+    ] = None,
+    days: Annotated[int, Query(ge=1, le=400, description="How many days to search")] = 180,
+    profile: ProfileParam = None,
+):
+    """General muhurta windows for a purpose (e.g. Vivah, Griha Pravesh) at a place.
+
+    Panchang Shuddhi only: Nakshatra, Tithi, weekday, Yoga, Bhadra, Gandanta, month, Chaturmas
+    and Guru/Shukra asta, per the purpose's rules. Not based on anyone's birth chart and without
+    Lagna Shuddhi; a family priest should confirm the final time.
+    """
+    result = service.muhurta(place, purpose, from_date, days, profile)
+    p = result.provenance
+    return schemas.MuhurtaOut(
+        request=schemas.MuhurtaRequestOut(
+            **place.request,
+            purpose=purpose,
+            from_date=result.first,
+            days=days,
+            profile=p.profile.id,
+        ),  # fmt: skip
+        purpose=schemas.MuhurtaPurposeOut.model_validate(result.purpose),
+        from_date=result.first,
+        to_date=result.last,
+        location=schemas.LocationOut.model_validate(place.location),
+        city=schemas.CityOut.model_validate(place.city) if place.city else None,
+        profile=schemas.ProfileOut.model_validate(p.profile),
+        engine=schemas.EngineOut.model_validate(p.engine),
+        api_version=p.api_version,
+        timezone_data_version=p.timezone_data_version,
+        muhurta_rule_version=result.rules.rule_version,
+        basis="General Panchang Shuddhi; not based on a personal birth chart or Lagna",
+        generated_at=p.generated_at,
+        windows=[schemas.MuhurtaWindowOut.model_validate(w) for w in result.windows],
+    )
+
+
 @router.get("/meta", response_model=schemas.MetaOut, tags=["meta"])
 def meta(service: Service):
     """API, engine and rule versions, supported dates and available profiles."""

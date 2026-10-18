@@ -300,3 +300,48 @@ class ErrorDetailOut(BaseModel):
 class ErrorOut(BaseModel):
     error: ErrorDetailOut
     request: dict = Field(description="The request parameters, preserved for context")
+
+
+class MuhurtaPurposeOut(_Model):
+    id: str
+    name: str
+    description: str
+
+
+class MuhurtaWindowOut(_Model):
+    day: date = Field(description="Civil date of the Panchang day (sunrise to next sunrise)")
+    start: datetime
+    end: datetime
+    nakshatras: list[str] = Field(description="Nakshatras during the window, in order")
+    tithis: list[str] = Field(description="Tithis during the window, in order")
+
+
+class MuhurtaRequestOut(BaseModel):
+    city_id: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+    timezone: str | None = None
+    purpose: str
+    from_date: date
+    days: int
+    profile: str
+
+
+class MuhurtaOut(BaseModel):
+    request: MuhurtaRequestOut
+    purpose: MuhurtaPurposeOut
+    from_date: date
+    to_date: date
+    location: LocationOut
+    city: CityOut | None
+    profile: ProfileOut
+    engine: EngineOut
+    api_version: str
+    timezone_data_version: str
+    muhurta_rule_version: str
+    basis: str = Field(
+        description="What the windows are based on: general Panchang Shuddhi only; not a "
+        "personal birth chart or Lagna Shuddhi"
+    )
+    generated_at: datetime
+    windows: list[MuhurtaWindowOut]

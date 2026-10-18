@@ -14,10 +14,17 @@ from vedic_panchang.domain.location import (
     InvalidLocationError,
     Location,
 )
+from vedic_panchang.domain.muhurta.engine import MuhurtaWindow, muhurta_windows
 from vedic_panchang.domain.panchang.calculator import calculate_daily_panchang
 from vedic_panchang.domain.panchang.models import DailyPanchang
 from vedic_panchang.infra.city_repository import City, CityRepository
 from vedic_panchang.rules.festivals import FestivalSet, load_festival_set
+from vedic_panchang.rules.muhurta import (
+    MuhurtaRules,
+    Purpose,
+    UnknownPurposeError,
+    load_muhurta_rules,
+)
 from vedic_panchang.rules.profiles import (
     CalculationProfile,
     ProfileRegistry,
@@ -33,7 +40,10 @@ __all__ = [
     "LocationRequestError",
     "PanchangService",
     "UnknownProfileError",
+    "UnknownPurposeError",
 ]
+
+MAX_MUHURTA_DAYS = 400
 
 
 class DateOutOfRangeError(ValueError):
@@ -106,6 +116,17 @@ class FestivalsResult:
     provenance: Provenance
 
 
+@dataclass(frozen=True)
+class MuhurtaResult:
+    place: Place
+    purpose: Purpose
+    rules: MuhurtaRules
+    first: date
+    last: date
+    windows: tuple[MuhurtaWindow, ...]
+    provenance: Provenance
+
+
 class PanchangService:
     engine: EngineInfo = ENGINE_INFO
     api_version: str = __version__
@@ -119,6 +140,7 @@ class PanchangService:
         # versions, so cache keys cover date/year + location + rule version.
         self._calculate = lru_cache(maxsize=settings.cache_size)(calculate_daily_panchang)
         self._festivals = lru_cache(maxsize=256)(festivals_for_year)
+        self._muhurta_range = lru_cache(maxsize=256)(self._muhurta_for_range)
 
     # ── locations ────────────────────────────────────────────
     def city(self, city_id: str) -> City:
@@ -212,6 +234,39 @@ class PanchangService:
             and self.settings.min_date <= o.date <= self.settings.max_date
         )
         return FestivalsResult(place, year, selected, self._provenance(profile, festival_set))
+
+    # ── muhurta ──────────────────────────────────────────────
+    def muhurta_purposes(self) -> tuple[Purpose, ...]:
+        return load_muhurta_rules().purposes
+
+    def muhurta(
+        self,
+        place: Place,
+        purpose_id: str,
+        first: date | None,
+        days: int,
+        profile_id: str | None,
+    ) -> MuhurtaResult:
+        profile = self.profiles.get(profile_id)
+        rules = load_muhurta_rules()
+        purpose = rules.purpose(purpose_id)
+        first = first or datetime.now(place.location.tz).date()
+        last = min(first + timedelta(days=max(1, min(days, MAX_MUHURTA_DAYS)) - 1),
+                   self.settings.max_date)  # fmt: skip
+        self._check_date(first)
+        windows = self._muhurta_range(purpose_id, place.location, first, last, profile)
+        festival_set = load_festival_set(profile.festival_set)
+        return MuhurtaResult(place, purpose, rules, first, last, windows,
+                             self._provenance(profile, festival_set))  # fmt: skip
+
+    @staticmethod
+    def _muhurta_for_range(
+        purpose_id: str, location: Location, first: date, last: date, profile: CalculationProfile
+    ) -> tuple[MuhurtaWindow, ...]:
+        """Only the requested days are calculated; the rule version is fixed per deploy."""
+        rules = load_muhurta_rules()
+        purpose = rules.purpose(purpose_id)
+        return tuple(muhurta_windows(purpose, rules, location, profile.ayanamsha, first, last))
 
     def _check_date(self, day: date) -> None:
         if not self.settings.min_date <= day <= self.settings.max_date:

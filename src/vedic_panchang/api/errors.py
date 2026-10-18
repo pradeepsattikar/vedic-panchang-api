@@ -17,6 +17,7 @@ from vedic_panchang.services.panchang_service import (
     InvalidLocationError,
     LocationRequestError,
     UnknownProfileError,
+    UnknownPurposeError,
 )
 
 logger = logging.getLogger(__name__)
@@ -39,6 +40,10 @@ def register_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(CityNotFoundError)
     async def _city(request: Request, exc: CityNotFoundError):
         return _error(request, 404, "city_not_found", str(exc))
+
+    @app.exception_handler(UnknownPurposeError)
+    async def _purpose(request: Request, exc: UnknownPurposeError):
+        return _error(request, 404, "purpose_not_found", str(exc), {"available": exc.available})
 
     @app.exception_handler(UnknownProfileError)
     async def _profile(request: Request, exc: UnknownProfileError):
