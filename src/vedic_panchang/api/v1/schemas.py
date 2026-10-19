@@ -135,6 +135,19 @@ class FestivalOut(_Model):
         description="Customary puja / observance times, most important first. Empty when the "
         "tradition prescribes no particular time. Parana is on the day after the date.",
     )
+    sade_teen_muhurat: str | None = Field(
+        None, description="'full' or 'half' on the Sade Teen (3 1/2) Muhurat days, else null"
+    )
+
+
+class ShubhYogaOut(_Model):
+    id: str = Field(description="guru-pushya, ravi-pushya, amrit-siddhi, sarvartha-siddhi, ...")
+    name: str
+    how: str = Field(description="How the combination is formed, in plain English")
+    note: str | None = Field(None, description="Traditional meaning, where one is customary")
+    special: bool = Field(description="Rare and widely observed (starred on calendars)")
+    start: datetime
+    end: datetime
 
 
 class DayWindowOut(_Model):
@@ -223,6 +236,11 @@ class DailyPanchangOut(BaseModel):
     grahas: GrahaPositionsOut | None = Field(
         None, description="Positions of the nine grahas at sunrise (facts only)"
     )
+    shubh_yogas: list[ShubhYogaOut] = Field(
+        default_factory=list,
+        description="Auspicious weekday/Nakshatra/Tithi combinations within the Panchang day",
+    )
+    shubh_rule_version: str | None = None
     timings: list[TimingOut]
     observances: list[FestivalOut] = Field(description="Festivals and observances on this date")
     festival_rule_version: str
@@ -239,6 +257,7 @@ class MonthDayOut(BaseModel):
     tithi_at_sunrise: SpanOut | None
     nakshatra_at_sunrise: SpanOut | None
     observances: list[FestivalOut]
+    shubh_yogas: list[ShubhYogaOut] = Field(default_factory=list)
 
 
 class MonthRequestOut(BaseModel):
@@ -259,6 +278,7 @@ class MonthOut(BaseModel):
     city: CityOut | None
     profile: ProfileOut
     festival_rule_version: str
+    shubh_rule_version: str | None = None
     engine: EngineOut
     api_version: str
     timezone_data_version: str

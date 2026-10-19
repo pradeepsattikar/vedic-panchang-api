@@ -30,6 +30,7 @@ from vedic_panchang.rules.profiles import (
     ProfileRegistry,
     UnknownProfileError,
 )
+from vedic_panchang.rules.shubh import load_shubh_rules
 
 # Errors the API layer maps to responses; re-exported so it depends on services only.
 __all__ = [
@@ -81,6 +82,7 @@ class Provenance:
     festival_set: FestivalSet
     engine: EngineInfo
     api_version: str
+    shubh_rule_version: str
     timezone_data_version: str
     generated_at: datetime
 
@@ -278,6 +280,7 @@ class PanchangService:
             festival_set=festival_set,
             engine=self.engine,
             api_version=self.api_version,
+            shubh_rule_version=load_shubh_rules(profile.festival_set).rule_version,
             timezone_data_version=self.timezone_data_version,
             generated_at=datetime.now(UTC).replace(microsecond=0),
         )

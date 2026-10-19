@@ -13,11 +13,14 @@
 #      (domain/festivals/muhurta.py, each checked against Drik Panchang). Omitted where the
 #      tradition prescribes no particular time (e.g. Holi, Guru Purnima).
 #
+# sade_teen_muhurat: "full" or "half" on the 3 1/2 self-auspicious days (Gudi Padwa,
+#      Akshaya Tritiya, Vijayadashami; Bali Pratipada is the half day).
+#
 # short_name: label for tight spaces such as calendar cells (at most ~12 characters).
 #
 # Any change here MUST bump rule_version.
 
-rule_version = "2026.10.4"
+rule_version = "2026.10.5"
 
 # ── Major festivals ────────────────────────────────────────────────────────────
 
@@ -77,6 +80,7 @@ amanta_month = "chaitra"
 tithi = 1
 kala = "sunrise"
 puja = ["ghatasthapana", "abhijit"]
+sade_teen_muhurat = "full"  # Gudi Padwa
 
 [[lunar]]
 id = "ram-navami"
@@ -106,6 +110,7 @@ amanta_month = "vaishakha"
 tithi = 3
 kala = "purvahna"
 puja = ["purvahna"]
+sade_teen_muhurat = "full"
 
 [[lunar]]
 id = "vat-savitri-vrat"
@@ -253,6 +258,7 @@ amanta_month = "ashwin"
 tithi = 10
 kala = "aparahna"
 puja = ["vijay", "aparahna"]
+sade_teen_muhurat = "full"
 
 [[lunar]]
 id = "sharad-purnima"
@@ -316,13 +322,14 @@ puja = ["lakshmi_puja", "pradosh", "nishita"]
 
 [[lunar]]
 id = "govardhan-puja"
-name = "Govardhan Puja"
+name = "Govardhan Puja · Bali Pratipada"
 short_name = "Govardhan"
 category = "major"
 amanta_month = "kartika"
 tithi = 1
 kala = "aparahna"  # avoids the day the Dwitiya moon is seen
 puja = ["pratahkala", "sayankala"]
+sade_teen_muhurat = "half"  # Bali Pratipada
 
 [[lunar]]
 id = "bhai-dooj"

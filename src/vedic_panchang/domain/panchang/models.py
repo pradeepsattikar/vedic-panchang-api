@@ -111,3 +111,4 @@ class DailyPanchang:
     sun_nakshatra: Element | None = None  # the Sun's Nakshatra (Surya Nakshatra), with changes
     year: YearInfo | None = None
     grahas: GrahaPositions | None = None  # the nine grahas at sunrise
+    shubh_yogas: tuple = ()  # ShubhYoga windows within the Panchang day (domain/panchang/shubh)

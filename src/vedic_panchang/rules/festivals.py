@@ -73,6 +73,8 @@ class LunarRule:
     avoid_bhadra: bool = False
     # Puja / observance times to report, by muhurta recipe (domain/festivals/muhurta.py).
     puja: tuple[str, ...] = ()
+    # One of the Sade Teen (3 1/2) Muhurat days: "full" or "half"; None otherwise.
+    sade_teen_muhurat: str | None = None
 
 
 @dataclass(frozen=True)
@@ -119,7 +121,15 @@ def _lunar(raw: dict) -> LunarRule:
         skip_amanta_months=frozenset(MONTH_IDS.index(m) for m in raw.get("skip_months", [])),
         avoid_bhadra=bool(raw.get("avoid_bhadra", False)),
         puja=tuple(raw.get("puja", ())),
+        sade_teen_muhurat=_sade_teen(raw),
     )
+
+
+def _sade_teen(raw: dict) -> str | None:
+    value = raw.get("sade_teen_muhurat")
+    if value not in (None, "full", "half"):
+        raise ValueError(f"{raw['id']}: sade_teen_muhurat must be 'full' or 'half'")
+    return value
 
 
 def _solar(raw: dict) -> SolarRule:
