@@ -1,0 +1,88 @@
+# Shubh Yogas: auspicious combinations of weekday (Vara), Nakshatra and Tithi.
+#
+# Facts only: the API reports when a combination occurs; it makes no predictions.
+# The weekday is the Vara of the Panchang day (sunrise to next sunrise), as Drik Panchang does:
+# a Nakshatra that begins after midnight still belongs to the previous weekday until sunrise.
+# Checked against Drik Panchang's 2026 New Delhi lists (tests/test_shubh_yogas.py).
+# Changing anything here MUST bump `rule_version`.
+
+rule_version = "2026.10.1"
+
+# Guru Pushya: Thursday with Pushya Nakshatra.
+[[yoga]]
+id = "guru-pushya"
+name = "Guru Pushya Yoga"
+how = "Thursday with Pushya Nakshatra"
+special = true  # starred on the Calendar
+weekdays = ["thursday"]
+nakshatras = ["pushya"]
+
+# Ravi Pushya: Sunday with Pushya Nakshatra.
+[[yoga]]
+id = "ravi-pushya"
+name = "Ravi Pushya Yoga"
+how = "Sunday with Pushya Nakshatra"
+special = true
+weekdays = ["sunday"]
+nakshatras = ["pushya"]
+
+# Amrit Siddhi: one Nakshatra for each weekday.
+[[yoga]]
+id = "amrit-siddhi"
+name = "Amrit Siddhi Yoga"
+how = "A particular Nakshatra on each weekday"
+special = true
+[yoga.weekday_nakshatras]
+sunday = ["hasta"]
+monday = ["mrigashira"]
+tuesday = ["ashwini"]
+wednesday = ["anuradha"]
+thursday = ["pushya"]
+friday = ["revati"]
+saturday = ["rohini"]
+
+# Sarvartha Siddhi: several Nakshatras for each weekday.
+[[yoga]]
+id = "sarvartha-siddhi"
+name = "Sarvartha Siddhi Yoga"
+how = "Particular Nakshatras on each weekday"
+special = false
+[yoga.weekday_nakshatras]
+sunday = ["hasta", "mula", "uttara-phalguni", "uttara-ashadha", "uttara-bhadrapada", "pushya", "ashwini"]
+monday = ["shravana", "rohini", "mrigashira", "pushya", "anuradha"]
+tuesday = ["ashwini", "uttara-bhadrapada", "krittika", "ashlesha"]
+wednesday = ["rohini", "anuradha", "hasta", "krittika", "mrigashira"]
+thursday = ["revati", "anuradha", "ashwini", "punarvasu", "pushya"]
+friday = ["revati", "anuradha", "ashwini", "punarvasu", "shravana"]
+saturday = ["shravana", "rohini", "swati"]
+
+# Ravi Yoga: the Moon's Nakshatra counted from the Sun's (the Sun's own Nakshatra = 1).
+[[yoga]]
+id = "ravi-yoga"
+name = "Ravi Yoga"
+how = "The Moon's Nakshatra is 4, 6, 9, 10, 13 or 20 counted from the Sun's"
+special = false
+sun_moon_counts = [4, 6, 9, 10, 13, 20]
+
+# Dwipushkar: Sunday, Tuesday or Saturday + Bhadra Tithi (2, 7, 12 of either Paksha)
+# + a Nakshatra with two padas in one Rashi and two in the next.
+[[yoga]]
+id = "dwipushkar"
+name = "Dwipushkar Yoga"
+how = "Sunday, Tuesday or Saturday with Dwitiya, Saptami or Dwadashi and Mrigashira, Chitra or Dhanishtha"
+note = "Traditionally, the results of actions are said to double"
+special = false
+weekdays = ["sunday", "tuesday", "saturday"]
+tithis = [2, 7, 12, 17, 22, 27]
+nakshatras = ["mrigashira", "chitra", "dhanishtha"]
+
+# Tripushkar: the same weekdays and Tithis + a Nakshatra spread over three padas in one Rashi.
+[[yoga]]
+id = "tripushkar"
+name = "Tripushkar Yoga"
+how = "Sunday, Tuesday or Saturday with Dwitiya, Saptami or Dwadashi and Krittika, Punarvasu, Uttara Phalguni, Vishakha, Uttara Ashadha or Purva Bhadrapada"
+note = "Traditionally, the results of actions are said to triple"
+special = false
+weekdays = ["sunday", "tuesday", "saturday"]
+tithis = [2, 7, 12, 17, 22, 27]
+nakshatras = ["krittika", "punarvasu", "uttara-phalguni", "vishakha", "uttara-ashadha", "purva-bhadrapada"]

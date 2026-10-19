@@ -87,6 +87,8 @@ def daily_panchang(
         sun_nakshatra=schemas.ElementOut.model_validate(p.sun_nakshatra),
         year=schemas.YearInfoOut.model_validate(p.year),
         grahas=schemas.GrahaPositionsOut.model_validate(p.grahas),
+        shubh_yogas=[schemas.ShubhYogaOut.model_validate(y) for y in p.shubh_yogas],
+        shubh_rule_version=result.provenance.shubh_rule_version,
         timings=[schemas.TimingOut.model_validate(t) for t in p.timings],
         observances=[schemas.FestivalOut.model_validate(o) for o in result.observances],
     )
@@ -114,6 +116,7 @@ def month_panchang(
         ),
         year=result.year,
         month=result.month,
+        shubh_rule_version=result.provenance.shubh_rule_version,
         **_context(place, result.provenance),
         days=[
             schemas.MonthDayOut(
@@ -126,6 +129,9 @@ def month_panchang(
                 nakshatra_at_sunrise=d.panchang.nakshatra.at_sunrise
                 and span(d.panchang.nakshatra.at_sunrise),
                 observances=[schemas.FestivalOut.model_validate(o) for o in d.observances],
+                shubh_yogas=[
+                    schemas.ShubhYogaOut.model_validate(y) for y in d.panchang.shubh_yogas
+                ],
             )
             for d in result.days
         ],

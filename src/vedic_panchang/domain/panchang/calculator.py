@@ -33,9 +33,11 @@ from vedic_panchang.domain.panchang.models import (
     Vara,
     YearInfo,
 )
+from vedic_panchang.domain.panchang.shubh import shubh_yogas
 from vedic_panchang.domain.panchang.spans import RawSpan, spans_over
 from vedic_panchang.domain.panchang.timings import day_timings
 from vedic_panchang.rules.profiles import CalculationProfile
+from vedic_panchang.rules.shubh import load_shubh_rules
 
 TITHI_DEG = 12.0
 KARANA_DEG = 6.0
@@ -185,6 +187,31 @@ class _Calculation:
 
         weekday = self.day.weekday()
         masa = lunar_months(self.elongation, self.sun_longitude, window_jd[0])
+        tithi = self.element(self.elongation, TITHI_DEG, window, window_jd, self.tithi_span)
+        nakshatra = self.element(
+            self.moon_longitude, NAKSHATRA_DEG, window, window_jd, self.named_span(names.NAKSHATRAS)
+        )
+        # The Sun stays ~13.5 days in a Nakshatra.
+        sun_nakshatra = self.element(
+            self.sun_longitude,
+            NAKSHATRA_DEG,
+            window,
+            window_jd,
+            self.named_span(names.NAKSHATRAS),
+            search_days=16.0,
+        )
+        # Shubh Yogas need a Vara, which runs from sunrise: none without a sunrise.
+        yogas = ()
+        if basis is DayWindowBasis.SUNRISE_TO_NEXT_SUNRISE:
+            yogas = shubh_yogas(
+                load_shubh_rules(self.profile.festival_set),
+                weekday,
+                window.start,
+                window.end,
+                tithi,
+                nakshatra,
+                sun_nakshatra,
+            )
         return DailyPanchang(
             date=self.day,
             vara=Vara(
@@ -198,14 +225,8 @@ class _Calculation:
             sunset=sunset,
             moonrise=moonrise,
             moonset=moonset,
-            tithi=self.element(self.elongation, TITHI_DEG, window, window_jd, self.tithi_span),
-            nakshatra=self.element(
-                self.moon_longitude,
-                NAKSHATRA_DEG,
-                window,
-                window_jd,
-                self.named_span(names.NAKSHATRAS),
-            ),  # fmt: skip
+            tithi=tithi,
+            nakshatra=nakshatra,
             yoga=self.element(
                 self.sun_plus_moon, YOGA_DEG, window, window_jd, self.named_span(names.YOGAS)
             ),
@@ -228,15 +249,7 @@ class _Calculation:
                 self.named_span(names.RASHIS),
                 search_days=3.0,
             ),
-            # The Sun stays ~13.5 days in a Nakshatra.
-            sun_nakshatra=self.element(
-                self.sun_longitude,
-                NAKSHATRA_DEG,
-                window,
-                window_jd,
-                self.named_span(names.NAKSHATRAS),
-                search_days=16.0,
-            ),
+            sun_nakshatra=sun_nakshatra,
             year=self.year_info(masa.amanta.number, self.sun_longitude(window_jd[0])),
             grahas=graha_positions(
                 window_jd[0],
@@ -244,6 +257,7 @@ class _Calculation:
                 self.profile.ayanamsha,
                 self.profile.lunar_node,
             ),
+            shubh_yogas=yogas,
         )
 
     def year_info(self, amanta_month: int, sun_longitude: float) -> YearInfo:
