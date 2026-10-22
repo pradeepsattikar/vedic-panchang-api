@@ -3,6 +3,7 @@ from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, Query, Request
 
+from vedic_panchang.api.fingerprint import data_fingerprint
 from vedic_panchang.api.v1 import schemas
 from vedic_panchang.services.panchang_service import PanchangService, Place, Provenance
 
@@ -269,6 +270,7 @@ def meta(service: Service):
     profiles = service.profiles
     return schemas.MetaOut(
         api_version=service.api_version,
+        data_fingerprint=data_fingerprint(),
         engine=schemas.EngineOut.model_validate(service.engine),
         timezone_data_version=service.timezone_data_version,
         default_profile=profiles.default_id,

@@ -47,3 +47,27 @@ def test_only_allowed_origins_get_cors():
     assert allowed.headers["access-control-allow-origin"] == "https://app.example"
     other = client.get("/v1/meta", headers={"origin": "https://elsewhere.example"})
     assert "access-control-allow-origin" not in other.headers
+
+
+def test_data_fingerprint_on_every_v1_answer_and_in_meta():
+    client = _client()
+    meta = client.get("/v1/meta")
+    fingerprint = meta.json()["data_fingerprint"]
+    assert len(fingerprint) == 16
+    assert meta.headers["x-data-fingerprint"] == fingerprint
+    assert client.get("/v1/cities/0").headers["x-data-fingerprint"] == fingerprint  # errors too
+    assert "x-data-fingerprint" not in client.get("/health").headers
+
+
+def test_data_fingerprint_changes_when_any_file_changes(tmp_path, monkeypatch):
+    from vedic_panchang.api import fingerprint
+
+    (tmp_path / "rules.toml").write_text("tithi = 1")
+    monkeypatch.setattr(fingerprint, "_PACKAGE", tmp_path)
+    fingerprint.data_fingerprint.cache_clear()
+    before = fingerprint.data_fingerprint()
+    (tmp_path / "rules.toml").write_text("tithi = 2")
+    fingerprint.data_fingerprint.cache_clear()
+    after = fingerprint.data_fingerprint()
+    fingerprint.data_fingerprint.cache_clear()
+    assert before != after

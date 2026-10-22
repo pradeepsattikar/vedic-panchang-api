@@ -10,6 +10,8 @@ from collections import deque
 
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
+from vedic_panchang.api.fingerprint import data_fingerprint
+
 _WINDOW_S = 60.0
 
 
@@ -100,6 +102,8 @@ class ResponseHeaders:
                 headers.append((b"referrer-policy", b"no-referrer"))
                 if cacheable and message["status"] == 200:
                     headers.append((b"cache-control", b"public, max-age=60"))
+                if scope["path"].startswith("/v1/"):
+                    headers.append((b"x-data-fingerprint", data_fingerprint().encode()))
                 message["headers"] = headers
             await send(message)
 

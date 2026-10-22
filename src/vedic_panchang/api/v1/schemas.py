@@ -324,6 +324,10 @@ class CatalogueOut(BaseModel):
 
 class MetaOut(BaseModel):
     api_version: str
+    data_fingerprint: str = Field(
+        description="Changes with every deploy that could change an answer (code, rules, data, "
+        "ephemeris, tz database); caches can file answers under it"
+    )
     engine: EngineOut
     timezone_data_version: str
     default_profile: str
