@@ -67,9 +67,12 @@ def spans_over(
     spans = [_span_at(angle_fn, segment_deg, count, window_start, search_days)]
     while spans[-1].end_jd < window_end:
         previous = spans[-1]
-        nxt = _span_at(angle_fn, segment_deg, count, previous.end_jd + 1e-6, search_days)
-        # The next span starts exactly where the previous one ended.
-        spans.append(RawSpan(nxt.index, previous.end_jd, nxt.end_jd))
+        # The next span starts exactly where the previous one ended, so only its end is searched.
+        jd = previous.end_jd + 1e-6
+        angle = angle_fn(jd)
+        index = int(angle // segment_deg) % count
+        end = _crossing(angle_fn, jd, jd + search_days, angle, (index + 1) * segment_deg)
+        spans.append(RawSpan(index, previous.end_jd, end))
     return spans
 
 

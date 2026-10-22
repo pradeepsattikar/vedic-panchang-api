@@ -9,10 +9,11 @@ rule set's minimum are dropped. Nothing about a person (birth chart, Lagna) is c
 
 import bisect
 from dataclasses import dataclass
-from datetime import date, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
+from functools import cache
 
 from vedic_panchang.astronomy import ephemeris as eph
-from vedic_panchang.astronomy.julian import from_jd
+from vedic_panchang.astronomy.julian import from_jd, to_jd
 from vedic_panchang.domain.festivals.calendar import TithiInstance, bhadra_periods, lunar_year
 from vedic_panchang.domain.festivals.kala import DayFrame, DayFrames
 from vedic_panchang.domain.location import Location
@@ -29,6 +30,39 @@ _DAY_DEG = 360.0  # kalamsha: one day of time = 360 degrees (4 minutes = 1 degre
 _GANDANTA_START = {0, 9, 18}
 _GANDANTA_END = {26, 8, 17}
 _ASHADHA, _KARTIKA = 3, 7
+
+
+# Angle boundaries that are the same for every city: (angle from sidereal Sun and Moon,
+# segment size, search horizon in days). Bhadra is handled separately.
+_GLOBAL_ANGLES = {
+    "tithi": (lambda sun, moon: (moon - sun) % 360.0, 12.0, 2.0),
+    "nakshatra": (lambda sun, moon: moon, NAK_DEG, 2.0),
+    "pada": (lambda sun, moon: moon, PADA_DEG, 2.0),
+    "yoga": (lambda sun, moon: (sun + moon) % 360.0, YOGA_DEG, 2.0),
+    "sun_sign": (lambda sun, moon: sun, 30.0, 33.0),
+}
+
+
+@cache
+def _year_boundaries(kind: str, year: int, ayanamsha: eph.Ayanamsha) -> tuple[float, ...]:
+    """Every boundary of one kind around a calendar year (UT), worked out once and shared by all
+    cities and requests: only sunrise-based parts of a muhurta depend on the place."""
+    lo = to_jd(datetime(year, 1, 1, tzinfo=UTC)) - 3.0
+    hi = to_jd(datetime(year + 1, 1, 1, tzinfo=UTC)) + 3.0
+    if kind == "bhadra":
+        return tuple(jd for period in bhadra_periods(ayanamsha, lo, hi) for jd in period)
+    angle_of, segment, search_days = _GLOBAL_ANGLES[kind]
+
+    def angle(jd: float) -> float:
+        return angle_of(*eph.sidereal_sun_moon(jd, ayanamsha))
+
+    spans = spans_over(angle, segment, lo, hi, search_days=search_days)
+    return tuple(sorted({jd for span in spans for jd in (span.start_jd, span.end_jd)}))
+
+
+def _boundaries(kind: str, lo: float, hi: float, ayanamsha: eph.Ayanamsha) -> list[float]:
+    years = range(from_jd(lo, UTC).year, from_jd(hi, UTC).year + 1)
+    return [jd for y in years for jd in _year_boundaries(kind, y, ayanamsha) if lo <= jd <= hi]
 
 
 @dataclass(frozen=True)
@@ -154,34 +188,15 @@ def muhurta_windows(
         return []
     lo, hi = days[0].sunrise, days[-1].next_sunrise
 
-    def elongation(jd: float) -> float:
-        sun, moon = eph.sidereal_sun_moon(jd, ayanamsha)
-        return (moon - sun) % 360.0
-
-    def moon_lon(jd: float) -> float:
-        return eph.sidereal_sun_moon(jd, ayanamsha)[1]
-
-    def sun_plus_moon(jd: float) -> float:
-        sun, moon = eph.sidereal_sun_moon(jd, ayanamsha)
-        return (sun + moon) % 360.0
-
-    def sun_lon(jd: float) -> float:
-        return eph.sidereal_sun_moon(jd, ayanamsha)[0]
-
     cuts: set[float] = set()
-    for span in spans_over(elongation, 12.0, lo, hi):
-        cuts.update((span.start_jd, span.end_jd))
-    for span in spans_over(moon_lon, PADA_DEG if purpose.avoid_gandanta else NAK_DEG, lo, hi):
-        cuts.update((span.start_jd, span.end_jd))
+    cuts.update(_boundaries("tithi", lo, hi, ayanamsha))
+    cuts.update(_boundaries("pada" if purpose.avoid_gandanta else "nakshatra", lo, hi, ayanamsha))
     if purpose.yogas_excluded:
-        for span in spans_over(sun_plus_moon, YOGA_DEG, lo, hi):
-            cuts.update((span.start_jd, span.end_jd))
+        cuts.update(_boundaries("yoga", lo, hi, ayanamsha))
     if purpose.solar_months_excluded:
-        for span in spans_over(sun_lon, 30.0, lo, hi, search_days=33.0):
-            cuts.update((span.start_jd, span.end_jd))
-    bhadra = bhadra_periods(ayanamsha, lo, hi) if purpose.avoid_bhadra else []
-    for start, end in bhadra:
-        cuts.update((start, end))
+        cuts.update(_boundaries("sun_sign", lo, hi, ayanamsha))
+    if purpose.avoid_bhadra:
+        cuts.update(_boundaries("bhadra", lo, hi, ayanamsha))
 
     years = range(first.year, last.year + 1)
     months = _LunarMonths([i for y in years for i in lunar_year(y, ayanamsha)])
