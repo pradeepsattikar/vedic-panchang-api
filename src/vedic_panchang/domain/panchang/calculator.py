@@ -33,6 +33,7 @@ from vedic_panchang.domain.panchang.models import (
     Vara,
     YearInfo,
 )
+from vedic_panchang.domain.panchang.samvatsara import shaka_samvatsara, vikram_samvatsara
 from vedic_panchang.domain.panchang.shubh import shubh_yogas
 from vedic_panchang.domain.panchang.spans import RawSpan, spans_over
 from vedic_panchang.domain.panchang.timings import day_timings
@@ -269,6 +270,8 @@ class _Calculation:
         return YearInfo(
             vikram_samvat=vikram,
             shaka_samvat=vikram - 135,
+            vikram_samvatsara=vikram_samvatsara(vikram, self.profile.ayanamsha),
+            shaka_samvatsara=shaka_samvatsara(vikram - 135),
             ritu=names.RITUS[(amanta_month - 1) // 2],
             ayana="Uttarayana" if uttarayana else "Dakshinayana",
         )

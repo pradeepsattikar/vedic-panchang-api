@@ -15,6 +15,8 @@ def test_matches_drik_toronto(daily):
     assert body["year"] == {
         "vikram_samvat": 2083,
         "shaka_samvat": 1948,
+        "vikram_samvatsara": {"number": 53, "id": "siddharthi", "name": "Siddharthi"},
+        "shaka_samvatsara": {"number": 40, "id": "parabhava", "name": "Parabhava"},
         "ritu": "Sharad",
         "ayana": "Dakshinayana",
     }

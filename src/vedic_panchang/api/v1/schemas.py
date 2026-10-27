@@ -179,9 +179,21 @@ class RequestContextOut(BaseModel):
     profile: str
 
 
+class SamvatsaraOut(_Model):
+    number: int = Field(description="1 = Prabhava ... 60 = Akshaya")
+    id: str
+    name: str
+
+
 class YearInfoOut(_Model):
     vikram_samvat: int = Field(description="Begins at Chaitra Shukla Pratipada")
     shaka_samvat: int = Field(description="Shalivahana Shaka; begins at Chaitra Shukla Pratipada")
+    vikram_samvatsara: SamvatsaraOut = Field(
+        description="North Indian year name: Jupiter (Barhaspatya) cycle at Mesha Sankranti"
+    )
+    shaka_samvatsara: SamvatsaraOut = Field(
+        description="Maharashtrian / South Indian year name: fixed cycle on the Shaka year"
+    )
     ritu: str = Field(description="Vedic Ritu by lunar month")
     ayana: str = Field(description="Uttarayana (Sun in Makara..Mithuna, sidereal) or Dakshinayana")
 
