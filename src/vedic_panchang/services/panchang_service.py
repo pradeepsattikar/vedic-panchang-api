@@ -239,7 +239,7 @@ class PanchangService:
 
     # ── muhurta ──────────────────────────────────────────────
     def muhurta_purposes(self) -> tuple[Purpose, ...]:
-        return load_muhurta_rules().purposes
+        return load_muhurta_rules(self.profiles.get(None).muhurta_set).purposes
 
     def muhurta(
         self,
@@ -250,7 +250,7 @@ class PanchangService:
         profile_id: str | None,
     ) -> MuhurtaResult:
         profile = self.profiles.get(profile_id)
-        rules = load_muhurta_rules()
+        rules = load_muhurta_rules(profile.muhurta_set)
         purpose = rules.purpose(purpose_id)
         first = first or datetime.now(place.location.tz).date()
         last = min(first + timedelta(days=max(1, min(days, MAX_MUHURTA_DAYS)) - 1),
@@ -266,7 +266,7 @@ class PanchangService:
         purpose_id: str, location: Location, first: date, last: date, profile: CalculationProfile
     ) -> tuple[MuhurtaWindow, ...]:
         """Only the requested days are calculated; the rule version is fixed per deploy."""
-        rules = load_muhurta_rules()
+        rules = load_muhurta_rules(profile.muhurta_set)
         purpose = rules.purpose(purpose_id)
         return tuple(muhurta_windows(purpose, rules, location, profile.ayanamsha, first, last))
 
@@ -280,7 +280,7 @@ class PanchangService:
             festival_set=festival_set,
             engine=self.engine,
             api_version=self.api_version,
-            shubh_rule_version=load_shubh_rules(profile.festival_set).rule_version,
+            shubh_rule_version=load_shubh_rules(profile.shubh_set).rule_version,
             timezone_data_version=self.timezone_data_version,
             generated_at=datetime.now(UTC).replace(microsecond=0),
         )

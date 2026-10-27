@@ -28,6 +28,8 @@ class CalculationProfile:
     festival_convention: str
     day_anchor: str
     festival_set: str
+    shubh_set: str  # rules/data/shubh/<set>.toml
+    muhurta_set: str  # rules/data/muhurta/<set>.toml
     abhijit_excluded_weekdays: frozenset[int]
     lunar_node: str  # "mean" or "true": how Rahu and Ketu are calculated
     # period id -> 7-tuple of 1-based day parts, indexed by Python weekday (Monday = 0)
@@ -56,12 +58,39 @@ def _parse(profile_id: str, raw: dict) -> CalculationProfile:
         festival_convention=raw["festival_convention"],
         day_anchor=raw["day_anchor"],
         festival_set=raw["festival_set"],
+        shubh_set=raw["shubh_set"],
+        muhurta_set=raw["muhurta_set"],
         abhijit_excluded_weekdays=frozenset(
             WEEKDAYS.index(day) for day in raw.get("abhijit_excluded_weekdays", [])
         ),
         lunar_node=_lunar_node(profile_id, raw.get("lunar_node", "mean")),
         day_periods=tuple(periods),
     )
+
+
+def _merged(base: dict, override: dict) -> dict:
+    """``override`` on top of ``base``; nested tables (e.g. day_periods) are merged key by key."""
+    out = dict(base)
+    for key, value in override.items():
+        if isinstance(value, dict) and isinstance(out.get(key), dict):
+            out[key] = _merged(out[key], value)
+        else:
+            out[key] = value
+    return out
+
+
+def _resolve(profile_id: str, all_raw: dict, seen: tuple[str, ...] = ()) -> dict:
+    """A profile may name another with ``inherits`` and list only what differs."""
+    if profile_id in seen:
+        raise ValueError(f"{profile_id}: 'inherits' forms a loop")
+    raw = all_raw[profile_id]
+    parent = raw.get("inherits")
+    if parent is None:
+        return raw
+    if parent not in all_raw:
+        raise ValueError(f"{profile_id}: inherits unknown profile '{parent}'")
+    body = {k: v for k, v in raw.items() if k != "inherits"}
+    return _merged(_resolve(parent, all_raw, (*seen, profile_id)), body)
 
 
 def _lunar_node(profile_id: str, value: str) -> str:
@@ -87,7 +116,7 @@ class ProfileRegistry:
 def load_profiles() -> ProfileRegistry:
     text = resources.files("vedic_panchang.rules").joinpath("data/profiles.toml").read_text()
     raw = tomllib.loads(text)
-    profiles = {pid: _parse(pid, body) for pid, body in raw["profiles"].items()}
+    profiles = {pid: _parse(pid, _resolve(pid, raw["profiles"])) for pid in raw["profiles"]}
     default_id = raw["default_profile"]
     if default_id not in profiles:
         raise ValueError(f"default_profile '{default_id}' is not defined")

@@ -4,6 +4,9 @@
 # value here MUST bump `rule_version`, because cached results and API responses are keyed
 # and labelled by it.
 #
+# A profile may say `inherits = "<other profile>"` and list only the values that differ;
+# nested tables (day_periods) are merged key by key.
+#
 # Day-period tables: the daytime (sunrise -> sunset) is split into 8 equal parts; the
 # number is the 1-based part for that weekday. Verified against Drik Panchang (2026-10-10).
 
@@ -17,6 +20,8 @@ month_system = "purnimanta"
 festival_convention = "smarta"
 day_anchor = "sunrise"
 festival_set = "north-indian-smarta"  # rules/data/festivals/<set>.toml
+shubh_set = "north-indian-smarta"     # rules/data/shubh/<set>.toml
+muhurta_set = "north-indian-smarta"   # rules/data/muhurta/<set>.toml
 
 # Weekdays on which Abhijit Muhurta is avoided (reported as not applicable).
 # Wednesday: matches Drik Panchang, confirmed by the founder 2026-10-12 (D08).
@@ -51,3 +56,17 @@ thursday = 3
 friday = 2
 saturday = 1
 sunday = 7
+
+# Maharashtrian Panchang (founder, 2026-10-26): Amanta months (a month ends at Amavasya), as in
+# Date Panchang and Kalnirnay. Everything else (Lahiri, sunrise day, Rahu Kalam tables,
+# Abhijit, Graha positions, Shubh Yogas, Muhurat) is the same as the North Indian profile.
+# Festival dates follow the same Tithi rules; only month names in Krishna Paksha differ.
+[profiles.maharashtrian-smarta]
+inherits = "north-indian-smarta"
+name = "Maharashtrian (Amanta), Smarta observance"
+rule_version = "2026.10.1"  # 2026-10-27: first version (Amanta months; North Indian festival list)
+month_system = "amanta"
+# Temporary: the North Indian festival list until the founder-reviewed Maharashtrian list
+# (rules/data/festivals/maharashtrian-smarta.toml) is built. See
+# notes/design_2026-10-26_panchang_styles_and_marathi.md in the project folder.
+festival_set = "north-indian-smarta"

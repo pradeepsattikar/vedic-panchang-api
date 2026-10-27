@@ -204,7 +204,7 @@ class _Calculation:
         yogas = ()
         if basis is DayWindowBasis.SUNRISE_TO_NEXT_SUNRISE:
             yogas = shubh_yogas(
-                load_shubh_rules(self.profile.festival_set),
+                load_shubh_rules(self.profile.shubh_set),
                 weekday,
                 window.start,
                 window.end,
