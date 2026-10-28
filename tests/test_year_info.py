@@ -8,12 +8,15 @@ from tests.conftest import minutes_apart
 
 TORONTO = {"city_id": "6167865"}
 MUMBAI = {"city_id": "1275339"}
+PUNE = {"city_id": "1259229"}
+MAHARASHTRIAN = {"profile": "maharashtrian-smarta"}
 
 
 def test_matches_drik_toronto(daily):
     body = daily("2026-10-17", **TORONTO)
     assert body["year"] == {
         "vikram_samvat": 2083,
+        "vikram_year_start": "chaitra",
         "shaka_samvat": 1948,
         "vikram_samvatsara": {"number": 53, "id": "siddharthi", "name": "Siddharthi"},
         "shaka_samvatsara": {"number": 40, "id": "parabhava", "name": "Parabhava"},
@@ -31,6 +34,25 @@ def test_samvat_year_boundary(daily):
     assert daily("2026-03-10", **MUMBAI)["year"]["vikram_samvat"] == 2082  # Phalguna
     assert daily("2026-04-10", **MUMBAI)["year"]["vikram_samvat"] == 2083  # Chaitra
     assert daily("2026-12-25", **MUMBAI)["year"]["vikram_samvat"] == 2083  # Pausha, same year
+    # Margashirsha can run into January (after an Adhika month): still the old year.
+    assert daily("2024-01-05", **MUMBAI)["year"]["vikram_samvat"] == 2080
+
+
+def test_maharashtrian_vikram_year_starts_at_kartika(daily):
+    # Kalnirnay 2026 (Pune/Mumbai), October page: "श्री शालिवाहन शके १९४८, पराभवनाम संवत्सर,
+    # विक्रम संवत २०८२". The Vikram year turns at Kartika Shukla Pratipada (Diwali Padwa).
+    year = daily("2026-10-28", **PUNE, **MAHARASHTRIAN)["year"]
+    assert year["vikram_samvat"] == 2082
+    assert year["vikram_year_start"] == "kartika"
+    assert year["shaka_samvat"] == 1948
+    assert year["shaka_samvatsara"]["name"] == "Parabhava"
+    assert daily("2026-11-09", **PUNE, **MAHARASHTRIAN)["year"]["vikram_samvat"] == 2082  # Ashwin
+    assert daily("2026-11-10", **PUNE, **MAHARASHTRIAN)["year"]["vikram_samvat"] == 2083  # Padwa
+    # From January to Gudi Padwa both reckonings agree; Shaka still turns at Gudi Padwa.
+    march = daily("2026-03-20", **PUNE, **MAHARASHTRIAN)["year"]
+    assert (march["vikram_samvat"], march["shaka_samvat"]) == (2082, 1948)
+    # North Indian style, same day and place: Chaitradi year.
+    assert daily("2026-10-28", **PUNE)["year"]["vikram_samvat"] == 2083
 
 
 def test_ritu_follows_the_lunar_month(daily):

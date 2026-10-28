@@ -86,9 +86,11 @@ class Vara:
 class YearInfo:
     """Samvat years, Ritu and Ayana at sunrise."""
 
-    vikram_samvat: int  # begins at Chaitra Shukla Pratipada
+    vikram_samvat: int  # begins at Chaitra or Kartika Shukla Pratipada (vikram_year_start)
+    vikram_year_start: str  # "chaitra" or "kartika", from the profile
     shaka_samvat: int  # Shalivahana Shaka, begins at Chaitra Shukla Pratipada
-    vikram_samvatsara: Samvatsara  # North Indian name (Jupiter cycle, at Mesha Sankranti)
+    # North Indian name (Jupiter cycle, at Mesha Sankranti) of the Chaitradi Vikram year
+    vikram_samvatsara: Samvatsara
     shaka_samvatsara: Samvatsara  # Maharashtrian / South Indian name (fixed cycle)
     ritu: str  # Vedic Ritu by lunar month
     ayana: str  # Uttarayana while the Sun is in Makara..Mithuna (sidereal), else Dakshinayana

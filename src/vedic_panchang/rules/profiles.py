@@ -32,6 +32,7 @@ class CalculationProfile:
     muhurta_set: str  # rules/data/muhurta/<set>.toml
     abhijit_excluded_weekdays: frozenset[int]
     lunar_node: str  # "mean" or "true": how Rahu and Ketu are calculated
+    vikram_year_start: str  # "chaitra" (North India) or "kartika" (Maharashtra, Gujarat)
     # period id -> 7-tuple of 1-based day parts, indexed by Python weekday (Monday = 0)
     day_periods: tuple[tuple[str, tuple[int, ...]], ...]
 
@@ -64,6 +65,7 @@ def _parse(profile_id: str, raw: dict) -> CalculationProfile:
             WEEKDAYS.index(day) for day in raw.get("abhijit_excluded_weekdays", [])
         ),
         lunar_node=_lunar_node(profile_id, raw.get("lunar_node", "mean")),
+        vikram_year_start=_vikram_year_start(profile_id, raw.get("vikram_year_start", "chaitra")),
         day_periods=tuple(periods),
     )
 
@@ -96,6 +98,12 @@ def _resolve(profile_id: str, all_raw: dict, seen: tuple[str, ...] = ()) -> dict
 def _lunar_node(profile_id: str, value: str) -> str:
     if value not in ("mean", "true"):
         raise ValueError(f"{profile_id}: lunar_node must be 'mean' or 'true'")
+    return value
+
+
+def _vikram_year_start(profile_id: str, value: str) -> str:
+    if value not in ("chaitra", "kartika"):
+        raise ValueError(f"{profile_id}: vikram_year_start must be 'chaitra' or 'kartika'")
     return value
 
 

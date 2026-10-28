@@ -30,6 +30,7 @@ def test_maharashtrian_inherits_everything_but_the_month_system():
     assert mh.day_periods == north.day_periods
     assert mh.abhijit_excluded_weekdays == north.abhijit_excluded_weekdays
     assert mh.lunar_node == north.lunar_node
+    assert (north.vikram_year_start, mh.vikram_year_start) == ("chaitra", "kartika")
     assert mh.shubh_set == north.shubh_set
     assert mh.muhurta_set == north.muhurta_set
     assert (mh.month_system, north.month_system) == ("amanta", "purnimanta")
@@ -45,8 +46,13 @@ def test_daily_values_are_identical_apart_from_the_profile_label(daily):
     assert mh["masa"] == north["masa"]
     assert mh["masa"]["amanta"]["name"] == "Ashwin"
     assert mh["masa"]["purnimanta"]["name"] == "Kartika"
-    for key in ("tithi", "nakshatra", "yoga", "karana", "sun", "moon", "timings", "grahas", "year"):
+    for key in ("tithi", "nakshatra", "yoga", "karana", "sun", "moon", "timings", "grahas"):
         assert mh[key] == north[key], key
+    # Only the Vikram year differs: Maharashtra starts it at Kartika (test_year_info.py).
+    differs = {"vikram_samvat", "vikram_year_start"}
+    assert {k: v for k, v in mh["year"].items() if k not in differs} == {
+        k: v for k, v in north["year"].items() if k not in differs
+    }
 
 
 def test_festival_names_use_the_profiles_month_system(client):

@@ -30,6 +30,10 @@ abhijit_excluded_weekdays = ["wednesday"]
 # Rahu and Ketu from the mean lunar node ("mean"), as Drik Panchang shows by default; or "true".
 lunar_node = "mean"
 
+# The Vikram Samvat year starts at Chaitra Shukla Pratipada ("chaitra", North India) or at
+# Kartika Shukla Pratipada, the day after Diwali ("kartika", Maharashtra and Gujarat).
+vikram_year_start = "chaitra"
+
 [profiles.north-indian-smarta.day_periods.rahu_kalam]
 monday = 2
 tuesday = 7
@@ -64,8 +68,10 @@ sunday = 7
 [profiles.maharashtrian-smarta]
 inherits = "north-indian-smarta"
 name = "Maharashtrian (Amanta), Smarta observance"
-rule_version = "2026.10.1"  # 2026-10-27: first version (Amanta months; North Indian festival list)
+rule_version = "2026.10.2"  # 2026-10-28: Vikram year starts at Kartika (Kalnirnay)
 month_system = "amanta"
+# Kalnirnay 2026 (founder's page): "शके १९४८, पराभवनाम संवत्सर, विक्रम संवत २०८२" in October.
+vikram_year_start = "kartika"
 # Temporary: the North Indian festival list until the founder-reviewed Maharashtrian list
 # (rules/data/festivals/maharashtrian-smarta.toml) is built. See
 # notes/design_2026-10-26_panchang_styles_and_marathi.md in the project folder.

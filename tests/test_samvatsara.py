@@ -63,10 +63,11 @@ def test_jupiter_samvatsara_changes_within_21_minutes_of_drik(name, ends_ist):
     assert after == (before + 1) % 60
 
 
-def test_the_year_name_is_the_same_in_every_profile(daily):
+def test_the_year_names_are_the_same_in_every_profile(daily):
     north = daily("2026-10-27", city_id=NEW_DELHI)["year"]
     mh = daily("2026-10-27", city_id=NEW_DELHI, profile="maharashtrian-smarta")["year"]
-    assert north == mh
+    for key in ("vikram_samvatsara", "shaka_samvatsara", "shaka_samvat"):
+        assert north[key] == mh[key], key
 
 
 def test_names_change_with_the_samvat_year(daily):
