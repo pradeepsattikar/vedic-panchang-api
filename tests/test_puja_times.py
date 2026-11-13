@@ -16,6 +16,7 @@ from tests.conftest import minutes_apart
 DELHI = {"lat": 28.65195, "lon": 77.23149, "tz": "Asia/Kolkata"}  # GeoNames 1273294
 NEW_DELHI = {"lat": 28.63576, "lon": 77.22445, "tz": "Asia/Kolkata"}  # GeoNames 1261481
 BRAMPTON = {"lat": 43.6834, "lon": -79.7663, "tz": "America/Toronto", "alt": 218}
+KOLKATA = {"lat": 22.5625, "lon": 88.3628, "tz": "Asia/Kolkata"}  # GeoNames 1275004
 
 # (place, festival, date, muhurta, start, end) — end on the next day where it is earlier.
 DRIK = [
@@ -47,6 +48,10 @@ DRIK = [
     (NEW_DELHI, "sharad-purnima", "2025-10-06", "nishita", "23:45", "00:34"),
     (NEW_DELHI, "yogini-ekadashi", "2025-06-21", "parana", "13:47", "16:35"),  # Jun 22
     (NEW_DELHI, "pausha-putrada-ekadashi", "2025-12-30", "parana", "13:26", "15:31"),  # Dec 31
+    # Dev Uthani 2026: Ekadashi ends 06:31 (Nov 21), Dwadashi ends before the next sunrise, so the
+    # Smarta fast stays on Nov 20 and parana is that afternoon (not the Gauna Nov 21). Drik.
+    (KOLKATA, "dev-uthani-ekadashi", "2026-11-20", "parana", "12:28", "14:40"),  # Nov 21
+    (NEW_DELHI, "dev-uthani-ekadashi", "2026-11-20", "parana", "13:10", "15:18"),  # Nov 21
 ]  # fmt: skip
 
 NEXT_DAY = {"parana"}  # on the day after the observance date

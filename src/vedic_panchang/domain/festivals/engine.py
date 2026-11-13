@@ -5,6 +5,13 @@ the rule's kala (e.g. Pradosh for Diwali); time under Bhadra does not count for 
 avoid it. If the Tithi prevails in the kala on two days, the rule's tie-break decides. If
 on neither, the day on which the Tithi prevails at sunrise is used (udaya tithi), and for a
 Tithi that touches no sunrise, the Panchang day in which it begins.
+
+Ekadashi (rules with a parana time): the fast must be broken within Dwadashi. When Ekadashi
+begins after one sunrise and ends shortly after the next, and Dwadashi then ends before the
+following sunrise, a fast on the udaya day could only be broken after Dwadashi. The Smarta
+fast is then kept on the first day and broken on the udaya day; the udaya day is the
+alternate (Gauna) Ekadashi. Drik Panchang, Prabodhini Ekadashi 2026, Kolkata: fast Nov 20,
+parana Nov 21 12:28-2:40 PM (Gauna Nov 21).
 """
 
 from dataclasses import dataclass
@@ -114,6 +121,23 @@ def _choose_day(rule: LunarRule, inst: TithiInstance, frames: DayFrames, ayanams
     return max(scored, key=lambda item: item[1])[0]  # first day wins an exact tie
 
 
+def _ekadashi_day(
+    day: date, inst: TithiInstance, dwadashi: TithiInstance | None, frames: DayFrames
+) -> date:
+    """Move an Ekadashi fast to the previous day when Dwadashi would end before the parana day."""
+    frame, before, after = (
+        frames.frame(day),
+        frames.frame(day - timedelta(days=1)),
+        frames.frame(day + timedelta(days=1)),
+    )
+    if dwadashi is None or frame is None or before is None or after is None:
+        return day
+    starts_after_previous_sunrise = before.sunrise < inst.start_jd < frame.sunrise
+    if starts_after_previous_sunrise and dwadashi.end_jd <= after.sunrise:
+        return day - timedelta(days=1)
+    return day
+
+
 def _render(template: str, months: LunarMonths, month_system: str) -> str:
     masa = months.purnimanta if month_system == "purnimanta" else months.amanta
     label = f"Adhika {masa.name}" if masa.is_adhika else masa.name
@@ -151,6 +175,9 @@ def _lunar_occurrences(rule, instances, frames, profile) -> list[FestivalOccurre
         day = _choose_day(rule, inst, frames, profile.ayanamsha)
         if day is None:
             continue  # no sunrise around this date at this location
+        following = instances[position + 1] if position + 1 < len(instances) else None
+        if "parana" in rule.puja:
+            day = _ekadashi_day(day, inst, following, frames)
         result.append(
             FestivalOccurrence(
                 festival_id=rule.id,
@@ -169,7 +196,7 @@ def _lunar_occurrences(rule, instances, frames, profile) -> list[FestivalOccurre
                     profile.ayanamsha,
                     day,
                     inst,
-                    instances[position + 1] if position + 1 < len(instances) else None,
+                    following,
                 ),  # fmt: skip
             )
         )
