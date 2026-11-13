@@ -265,6 +265,8 @@ def _parana(ctx: Context) -> Span | None:
 
     Drik 2024-06-19 (Nirjala): 5:24-7:28 AM (Dwadashi ends 7:28 AM).
     Drik 2025-06-22 (Yogini): Hari Vasara to 9:41 AM -> 1:47-4:35 PM.
+    If Hari Vasara also outlasts Aparahna (while Dwadashi continues), Drik gives a single
+    moment, the end of Hari Vasara: Toronto 2026-12-20 (Mokshada) "Parana Time - 03:04 PM".
     """
     frame = ctx.frames.frame(ctx.day + timedelta(days=1))
     dwadashi = ctx.next_tithi
@@ -277,6 +279,8 @@ def _parana(ctx: Context) -> Span | None:
     window = pratah if hari_vasara_end < pratah[1] else aparahna
     start = max(window[0], hari_vasara_end)
     end = window[1]
+    if window is aparahna and window[1] <= hari_vasara_end < dwadashi.end_jd:
+        return (hari_vasara_end, hari_vasara_end)  # a single moment, as Drik shows
     if dwadashi.end_jd > frame.sunrise:  # Parana should be done within Dwadashi
         end = min(end, dwadashi.end_jd)
     return (start, end) if start < end else None

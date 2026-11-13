@@ -20,7 +20,7 @@
 #
 # Any change here MUST bump rule_version.
 
-rule_version = "2026.10.5"
+rule_version = "2026.11.1"
 
 # ── Major festivals ────────────────────────────────────────────────────────────
 

@@ -17,6 +17,9 @@ DELHI = {"lat": 28.65195, "lon": 77.23149, "tz": "Asia/Kolkata"}  # GeoNames 127
 NEW_DELHI = {"lat": 28.63576, "lon": 77.22445, "tz": "Asia/Kolkata"}  # GeoNames 1261481
 BRAMPTON = {"lat": 43.6834, "lon": -79.7663, "tz": "America/Toronto", "alt": 218}
 KOLKATA = {"lat": 22.5625, "lon": 88.3628, "tz": "Asia/Kolkata"}  # GeoNames 1275004
+TORONTO = {"lat": 43.70011, "lon": -79.4163, "tz": "America/Toronto"}  # GeoNames 6167865
+NEW_YORK = {"lat": 40.71427, "lon": -74.00597, "tz": "America/New_York"}  # GeoNames 5128581
+DALLAS = {"lat": 32.78306, "lon": -96.80667, "tz": "America/Chicago"}  # GeoNames 4684888
 
 # (place, festival, date, muhurta, start, end) — end on the next day where it is earlier.
 DRIK = [
@@ -52,6 +55,15 @@ DRIK = [
     # Smarta fast stays on Nov 20 and parana is that afternoon (not the Gauna Nov 21). Drik.
     (KOLKATA, "dev-uthani-ekadashi", "2026-11-20", "parana", "12:28", "14:40"),  # Nov 21
     (NEW_DELHI, "dev-uthani-ekadashi", "2026-11-20", "parana", "13:10", "15:18"),  # Nov 21
+    # Same rule elsewhere (Drik, fetched 2026-11-13; Gauna Ekadashi is the next day).
+    (TORONTO, "aja-ekadashi", "2026-09-06", "parana", "14:33", "17:08"),  # Sep 7
+    (NEW_DELHI, "pausha-putrada-ekadashi", "2027-01-18", "parana", "13:35", "15:42"),  # Jan 19
+    (DALLAS, "mohini-ekadashi", "2027-05-15", "parana", "14:47", "17:33"),  # May 16
+    (KOLKATA, "kamika-ekadashi", "2027-07-29", "parana", "13:02", "15:40"),  # Jul 30
+    (NEW_YORK, "jaya-ekadashi", "2027-02-16", "parana", "13:15", "15:24"),  # Feb 17
+    # Hari Vasara outlasts Aparahna: Drik gives one moment, "Parana Time - 03:04 PM". We give
+    # 3:05:32 PM: Hari Vasara comes from Tithi ends, which run ~1.5 min later than Drik (open).
+    (TORONTO, "mokshada-ekadashi", "2026-12-19", "parana", "15:05", "15:05"),  # Dec 20
 ]  # fmt: skip
 
 NEXT_DAY = {"parana"}  # on the day after the observance date
