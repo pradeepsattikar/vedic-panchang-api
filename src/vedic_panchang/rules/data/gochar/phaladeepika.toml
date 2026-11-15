@@ -7,7 +7,7 @@
 # REVIEW STATUS: draft. The tables below are the commonly cited Phaladeepika tables, typed in
 # from secondary sources; a Jyotishi still has to check each one against the text.
 
-rule_version = "2026.11.0-draft"
+rule_version = "2026.11.1-draft"  # 2026-11-15: fast planets ranked before slow (founder)
 source = "Phaladeepika (Mantreswara), ch. 26 Gochara"
 review_status = "pending"
 
@@ -128,8 +128,10 @@ shani = 15.0
 #   shani_period  - Sade Sati / Dhaiya for this Moon sign
 #   ingress       - a graha (not the Moon) changes sign during the week
 #   station       - a graha turns retrograde or direct during the week
+#   fast          - Surya, Budha, Shukra, then Mangal standing results
 #   slow          - Guru, Shani, Rahu, Ketu standing results
-#   fast          - Surya, Budha, Shukra, Mangal standing results
 #   moon          - the Moon's path through the week
+# Fast planets come before slow ones (founder, 2026-11-15): they change sign often and make one
+# week differ from the next; slow planets are the same background for months.
 [highlights]
-order = ["shani_period", "ingress", "station", "slow", "fast", "moon"]
+order = ["shani_period", "ingress", "station", "fast", "slow", "moon"]
