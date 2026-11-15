@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, Query, Request
@@ -261,6 +261,83 @@ def muhurta(
         generated_at=p.generated_at,
         windows=[schemas.MuhurtaWindowOut.model_validate(w) for w in result.windows],
     )
+
+
+GRAHA_NAMES = {"surya": "Surya", "chandra": "Chandra", "mangal": "Mangal", "budha": "Budha",
+               "guru": "Guru", "shukra": "Shukra", "shani": "Shani", "rahu": "Rahu",
+               "ketu": "Ketu"}  # fmt: skip
+
+
+@router.get("/gochar/weekly", response_model=schemas.GocharOut, tags=["gochar"])
+def gochar_weekly(
+    service: Service,
+    from_date: Annotated[
+        date | None, Query(alias="from", description="First local date (default: today)")
+    ] = None,
+    days: Annotated[int, Query(ge=1, le=31, description="Number of days")] = 7,
+    tz: Annotated[str, Query(description="IANA timezone for the window and times")] = "UTC",
+    profile: ProfileParam = None,
+):
+    """Gochara: the nine grahas' signs over the window, and for each of the 12 natal Moon
+    signs, each graha's house counted from it, judged by the rule set (favourable,
+    obstructed by Vedha, or unfavourable), Saturn's periods (Sade Sati, Dhaiya) and ranked
+    highlights.
+
+    Facts and rule ids only: no prediction text. Planet signs are the same everywhere, so
+    there is no place; `tz` only sets local midnight for the window and the clock times.
+    """
+    week, p = service.gochar(from_date, days, tz, profile)
+    at, rashi = week.at, week.rashi
+    grahas = []
+    for start in week.at_start:
+        g = start.graha
+        grahas.append(schemas.GocharGrahaOut(
+            id=g, name=GRAHA_NAMES[g], longitude_at_start=round(start.longitude, 4),
+            retrograde_at_start=start.retrograde,
+            signs=[schemas.GocharSignOut(rashi_number=s.sign + 1, rashi=rashi(s.sign),
+                                         start=at(s.start_jd), end=at(s.end_jd),
+                                         entered_in_window=s.entered_in_window)
+                   for s in week.sign_spans[g]],
+            stations=[schemas.GocharStationOut(at=at(s.jd), becomes=s.becomes)
+                      for s in week.stations if s.graha == g],
+            combust=[schemas.GocharCombustOut(start=at(c.start_jd), end=at(c.end_jd))
+                     for c in week.combust if c.graha == g],
+        ))  # fmt: skip
+    moon_signs = [
+        schemas.GocharMoonSignOut(
+            rashi_number=m.moon_sign + 1, rashi=rashi(m.moon_sign),
+            shani_periods=[schemas.ShaniPeriodOut(id=f.id, name=f.name, start=at(f.start_jd),
+                                                  end=at(f.end_jd)) for f in m.shani_flags],
+            transits=[schemas.GocharTransitOut(
+                graha=t.graha, rashi_number=t.sign + 1, rashi=rashi(t.sign), house=t.house,
+                status=t.status, vedha_house=t.vedha_house, vedha_by=list(t.vedha_by),
+                rule_id=t.rule_id, start=at(t.start_jd), end=at(t.end_jd),
+                entered_in_window=t.entered_in_window) for t in m.transits],
+            highlights=[schemas.GocharHighlightOut(
+                kind=h.kind, graha=h.graha, rule_ids=list(h.rule_ids),
+                at=at(h.jd) if h.jd is not None else None, detail=h.detail)
+                for h in m.highlights],
+        )
+        for m in week.moon_signs
+    ]  # fmt: skip
+    rules = week.rules
+    return schemas.GocharOut(
+        request=schemas.GocharRequestOut(from_date=week.start.date(), days=days, timezone=tz,
+                                         profile=p.profile.id),
+        from_date=week.start.date(),
+        to_date=(week.end - timedelta(days=1)).date(),
+        window_start=week.start,
+        window_end=week.end,
+        basis="Whole-sign houses counted from the natal Moon sign (Chandra Rashi); "
+        "facts and rule ids only, no predictions",
+        rule_set=rules.rule_set, rule_version=rules.rule_version, source=rules.source,
+        review_status=rules.review_status,
+        ayanamsha=p.profile.ayanamsha, lunar_node=week.lunar_node,
+        profile=schemas.ProfileOut.model_validate(p.profile),
+        engine=schemas.EngineOut.model_validate(p.engine),
+        api_version=p.api_version, timezone_data_version=p.timezone_data_version,
+        generated_at=p.generated_at, grahas=grahas, moon_signs=moon_signs,
+    )  # fmt: skip
 
 
 @router.get("/meta", response_model=schemas.MetaOut, tags=["meta"])

@@ -9,6 +9,7 @@ from vedic_panchang import __version__
 from vedic_panchang.astronomy.ephemeris import ENGINE_INFO, EngineInfo
 from vedic_panchang.config import Settings
 from vedic_panchang.domain.festivals.engine import FestivalOccurrence, festivals_for_year
+from vedic_panchang.domain.gochar.engine import GocharWeek, weekly_gochar
 from vedic_panchang.domain.location import (
     TIMEZONE_DATA_VERSION,
     InvalidLocationError,
@@ -19,6 +20,7 @@ from vedic_panchang.domain.panchang.calculator import calculate_daily_panchang
 from vedic_panchang.domain.panchang.models import DailyPanchang
 from vedic_panchang.infra.city_repository import City, CityRepository
 from vedic_panchang.rules.festivals import FestivalSet, load_festival_set
+from vedic_panchang.rules.gochar import load_gochar_rules
 from vedic_panchang.rules.muhurta import (
     MuhurtaRules,
     Purpose,
@@ -45,6 +47,7 @@ __all__ = [
 ]
 
 MAX_MUHURTA_DAYS = 400
+MAX_GOCHAR_DAYS = 31
 
 
 class DateOutOfRangeError(ValueError):
@@ -236,6 +239,27 @@ class PanchangService:
             and self.settings.min_date <= o.date <= self.settings.max_date
         )
         return FestivalsResult(place, year, selected, self._provenance(profile, festival_set))
+
+    # ── gochar ───────────────────────────────────────────────
+    def gochar(
+        self, first: date | None, days: int, timezone: str, profile_id: str | None
+    ) -> tuple[GocharWeek, Provenance]:
+        """Transits from each natal Moon sign. Not tied to a place: the timezone only sets
+        local midnight for the window and the clock times shown."""
+        profile = self.profiles.get(profile_id)
+        tz = Location(0.0, 0.0, timezone).tz  # validates the IANA id
+        first = first or datetime.now(tz).date()
+        days = max(1, min(days, MAX_GOCHAR_DAYS))
+        self._check_date(first)
+        self._check_date(first + timedelta(days=days - 1))
+        week = self._gochar(first, days, timezone, profile)
+        return week, self._provenance(profile, load_festival_set(profile.festival_set))
+
+    @staticmethod
+    @lru_cache(maxsize=256)
+    def _gochar(first: date, days: int, timezone: str, profile: CalculationProfile) -> GocharWeek:
+        return weekly_gochar(first, days, Location(0.0, 0.0, timezone).tz, profile.ayanamsha,
+                             profile.lunar_node, load_gochar_rules())  # fmt: skip
 
     # ── muhurta ──────────────────────────────────────────────
     def muhurta_purposes(self) -> tuple[Purpose, ...]:

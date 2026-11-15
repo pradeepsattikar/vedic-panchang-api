@@ -388,3 +388,100 @@ class MuhurtaOut(BaseModel):
     )
     generated_at: datetime
     windows: list[MuhurtaWindowOut]
+
+
+# ── Gochara (transits from the natal Moon sign) ─────────────────
+
+
+class GocharRequestOut(_Model):
+    from_date: date
+    days: int
+    timezone: str
+    profile: str
+
+
+class GocharSignOut(_Model):
+    rashi_number: int = Field(description="1 = Mesha ... 12 = Meena")
+    rashi: str
+    start: datetime = Field(description="Clipped to the window")
+    end: datetime
+    entered_in_window: bool = Field(description="The graha entered this sign during the window")
+
+
+class GocharStationOut(_Model):
+    at: datetime
+    becomes: str = Field(description="retrograde | direct")
+
+
+class GocharCombustOut(_Model):
+    start: datetime
+    end: datetime
+
+
+class GocharGrahaOut(_Model):
+    id: str
+    name: str
+    longitude_at_start: float = Field(description="Sidereal longitude at the window start")
+    retrograde_at_start: bool
+    signs: list[GocharSignOut]
+    stations: list[GocharStationOut]
+    combust: list[GocharCombustOut]
+
+
+class ShaniPeriodOut(_Model):
+    id: str = Field(description="sade_sati_1 | sade_sati_2 | sade_sati_3 | kantaka_shani | ...")
+    name: str
+    start: datetime
+    end: datetime
+
+
+class GocharTransitOut(_Model):
+    graha: str
+    rashi_number: int
+    rashi: str
+    house: int = Field(description="Whole-sign house counted from the Moon sign (1-12)")
+    status: str = Field(description="favourable | obstructed (Vedha) | unfavourable")
+    vedha_house: int | None = Field(description="For favourable houses: the obstructing house")
+    vedha_by: list[str] = Field(description="Grahas in the Vedha house (obstructed only)")
+    rule_id: str = Field(description="Stable interpretation key, e.g. guru_h5, chandra_h11_vedha")
+    start: datetime
+    end: datetime
+    entered_in_window: bool
+
+
+class GocharHighlightOut(_Model):
+    kind: str = Field(description="shani_period | ingress | station | slow | fast | moon")
+    graha: str | None
+    rule_ids: list[str]
+    at: datetime | None = Field(description="Instant of an ingress or station")
+    detail: str | None = Field(description="Station direction or Shani period id")
+
+
+class GocharMoonSignOut(_Model):
+    rashi_number: int = Field(description="Natal Moon sign: 1 = Mesha ... 12 = Meena")
+    rashi: str
+    shani_periods: list[ShaniPeriodOut]
+    transits: list[GocharTransitOut]
+    highlights: list[GocharHighlightOut] = Field(description="In the rule set's fixed order")
+
+
+class GocharOut(_Model):
+    request: GocharRequestOut
+    from_date: date
+    to_date: date
+    window_start: datetime
+    window_end: datetime
+    basis: str
+    rule_set: str
+    rule_version: str
+    source: str
+    review_status: str
+    ayanamsha: str
+    lunar_node: str
+    profile: ProfileOut
+    engine: EngineOut
+    api_version: str
+    timezone_data_version: str
+    generated_at: datetime
+    grahas: list[GocharGrahaOut]
+    moon_signs: list[GocharMoonSignOut]

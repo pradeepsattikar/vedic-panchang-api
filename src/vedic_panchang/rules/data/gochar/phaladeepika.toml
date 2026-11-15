@@ -1,0 +1,135 @@
+# Gochara (transit) rules, counted in whole signs from the natal Moon sign (Chandra Rashi).
+#
+# Source: Phaladeepika (Mantreswara), chapter 26 "Gochara". Changing any value here MUST bump
+# `rule_version`. Facts and rule ids only: the API publishes no prediction text, which the
+# client attaches to the rule ids.
+#
+# REVIEW STATUS: draft. The tables below are the commonly cited Phaladeepika tables, typed in
+# from secondary sources; a Jyotishi still has to check each one against the text.
+
+rule_version = "2026.11.0-draft"
+source = "Phaladeepika (Mantreswara), ch. 26 Gochara"
+review_status = "pending"
+
+# House counted from the natal Moon sign: ((transit_sign - moon_sign) % 12) + 1.
+#
+# [graha.<id>.favourable] maps each favourable house to its Vedha house: when another graha
+# occupies the Vedha house, the favourable result is obstructed (cancelled). Houses not listed
+# are unfavourable for that graha.
+
+[graha.surya.favourable]
+3 = 9
+6 = 12
+10 = 4
+11 = 5
+
+[graha.chandra.favourable]
+1 = 5
+3 = 9
+6 = 12
+7 = 2
+10 = 4
+11 = 8
+
+[graha.mangal.favourable]
+3 = 12
+6 = 9
+11 = 5
+
+[graha.budha.favourable]
+2 = 5
+4 = 3
+6 = 9
+8 = 1
+10 = 8
+11 = 12
+
+[graha.guru.favourable]
+2 = 12
+5 = 4
+7 = 3
+9 = 10
+11 = 8
+
+[graha.shukra.favourable]
+1 = 8
+2 = 7
+3 = 1
+4 = 10
+5 = 9
+8 = 5
+9 = 11
+11 = 3
+12 = 6
+
+[graha.shani.favourable]
+3 = 12
+6 = 9
+11 = 5
+
+# Rahu and Ketu: treated like Shani (favourable in 3, 6, 11). Reviewer to confirm.
+[graha.rahu.favourable]
+3 = 12
+6 = 9
+11 = 5
+
+[graha.ketu.favourable]
+3 = 12
+6 = 9
+11 = 5
+
+[vedha]
+# Pairs that never obstruct each other (father and son): Surya-Shani, Chandra-Budha.
+exempt_pairs = [["surya", "shani"], ["chandra", "budha"]]
+# Whether Rahu and Ketu cause Vedha to other grahas. Reviewer to confirm.
+nodes_cause_vedha = true
+
+# Saturn's standing periods, counted from the natal Moon sign. These are the popular
+# names used across North India (not specific to Phaladeepika).
+[[shani_period]]
+id = "sade_sati_1"
+house = 12
+name = "Sade Sati, first phase"
+
+[[shani_period]]
+id = "sade_sati_2"
+house = 1
+name = "Sade Sati, peak phase"
+
+[[shani_period]]
+id = "sade_sati_3"
+house = 2
+name = "Sade Sati, last phase"
+
+[[shani_period]]
+id = "kantaka_shani"
+house = 4
+name = "Kantaka Shani (Dhaiya)"
+
+[[shani_period]]
+id = "ashtama_shani"
+house = 8
+name = "Ashtama Shani (Dhaiya)"
+
+# Combustion (asta): a graha within this many degrees of the Sun's longitude. Facts only;
+# used in the output, not in the favourable/unfavourable judgment. Surya Siddhanta orbs
+# (the common convention); Budha and Shukra use the smaller orb while retrograde.
+[combustion]
+chandra = 12.0
+mangal = 17.0
+budha = 14.0
+budha_retrograde = 12.0
+guru = 11.0
+shukra = 10.0
+shukra_retrograde = 8.0
+shani = 15.0
+
+# Order of the weekly highlights (fixed, so the same week always ranks the same way):
+#   shani_period  - Sade Sati / Dhaiya for this Moon sign
+#   ingress       - a graha (not the Moon) changes sign during the week
+#   station       - a graha turns retrograde or direct during the week
+#   slow          - Guru, Shani, Rahu, Ketu standing results
+#   fast          - Surya, Budha, Shukra, Mangal standing results
+#   moon          - the Moon's path through the week
+[highlights]
+order = ["shani_period", "ingress", "station", "slow", "fast", "moon"]
