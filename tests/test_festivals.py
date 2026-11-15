@@ -97,7 +97,7 @@ def test_counts_per_year(festivals):
 
 def test_sankranti_after_sunset_moves_to_next_day(festivals):
     for f in festivals(2025, **DELHI):
-        if f["sankranti_time"]:
+        if f["sankranti_time"] and f["festival_id"] != "lohri":  # Lohri is the eve
             assert f["date"] >= f["sankranti_time"][:10]
 
 
@@ -142,6 +142,6 @@ def test_festival_errors(client, path, params, status, code):
 
 
 def test_every_short_name_fits_a_calendar_cell(festivals):
-    short_names = {f["short_name"] for f in festivals(2026, **DELHI)}
+    short_names = {f["short_name"] for y in (2025, 2026) for f in festivals(y, **DELHI)}
     assert "Durga Asht." in short_names and "Ekadashi" in short_names
     assert all(0 < len(name) <= 13 for name in short_names), sorted(short_names, key=len)[-3:]

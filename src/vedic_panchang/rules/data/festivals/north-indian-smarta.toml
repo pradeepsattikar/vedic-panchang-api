@@ -20,7 +20,7 @@
 #
 # Any change here MUST bump rule_version.
 
-rule_version = "2026.11.1"
+rule_version = "2026.11.2"
 
 # ── Major festivals ────────────────────────────────────────────────────────────
 
@@ -611,6 +611,139 @@ tithi = 26
 kala = "sunrise"
 puja = ["parana"]
 
+# ── Added 2026-11 (founder): more yearly festivals ─────────────────────────────
+
+[[lunar]]
+id = "parshuram-jayanti"
+name = "Parshuram Jayanti"
+short_name = "Parshuram"
+category = "major"
+amanta_month = "vaishakha"
+tithi = 3
+kala = "pradosh"
+
+[[lunar]]
+id = "sita-navami"
+name = "Sita Navami"
+short_name = "Sita Navami"
+category = "major"
+amanta_month = "vaishakha"
+tithi = 9
+kala = "madhyahna"
+tie = "full"
+puja = ["madhyahna_uncut"]  # Drik Toronto 2027-05-14: 11:46 AM-2:42 PM after Navami ended
+
+[[lunar]]
+id = "narasimha-jayanti"
+name = "Narasimha Jayanti"
+short_name = "Narasimha"
+category = "major"
+amanta_month = "vaishakha"
+tithi = 14
+kala = "sayankala"
+puja = ["sayankala", "madhyahna"]  # Drik: Sayana Kala puja, Madhyahna sankalp
+
+[[lunar]]
+id = "ganga-dussehra"
+name = "Ganga Dussehra"
+short_name = "Ganga Dush."
+category = "major"
+amanta_month = "jyeshtha"
+adhika = "first"  # Drik 2026: 25 May, in Adhika Jyeshtha
+tithi = 10
+kala = "sunrise"
+
+[[lunar]]
+id = "rath-yatra"
+name = "Jagannath Rath Yatra"
+short_name = "Rath Yatra"
+category = "major"
+amanta_month = "ashadha"
+tithi = 2
+kala = "sunrise"
+
+[[lunar]]
+id = "kajari-teej"
+name = "Kajari Teej"
+short_name = "Kajari Teej"
+category = "major"
+amanta_month = "shravana"
+tithi = 18
+kala = "sunrise"
+
+[[lunar]]
+id = "rishi-panchami"
+name = "Rishi Panchami"
+short_name = "Rishi Panch."
+category = "major"
+amanta_month = "bhadrapada"
+tithi = 5
+kala = "madhyahna"
+puja = ["madhyahna"]
+
+[[lunar]]
+id = "radha-ashtami"
+name = "Radha Ashtami"
+short_name = "Radha Ashtami"
+category = "major"
+amanta_month = "bhadrapada"
+tithi = 8
+kala = "sunrise"  # Drik Delhi 2027-09-08 (Ashtami at sunrise), not the Madhyahna day
+puja = ["madhyahna_uncut"]
+
+[[lunar]]
+id = "gopashtami"
+name = "Gopashtami"
+short_name = "Gopashtami"
+amanta_month = "kartika"
+tithi = 8
+kala = "sunrise"
+
+[[lunar]]
+id = "akshaya-navami"
+name = "Akshaya Navami"
+short_name = "Akshaya Nav."
+amanta_month = "kartika"
+tithi = 9
+kala = "purvahna"
+puja = ["purvahna_tithi"]
+
+[[lunar]]
+id = "kansa-vadh"
+name = "Kansa Vadh"
+short_name = "Kansa Vadh"
+amanta_month = "kartika"
+tithi = 10
+kala = "sunrise"
+
+[[lunar]]
+id = "bhishma-panchak"
+name = "Bhishma Panchak begins"
+short_name = "Bhishma Pan."
+amanta_month = "kartika"
+tithi = 11
+kala = "sunrise"
+ekadashi_day = true  # begins on Prabodhini Ekadashi (Drik Delhi 2025-11-01)
+
+[[lunar]]
+id = "tulsi-vivah"
+name = "Tulsi Vivah"
+short_name = "Tulsi Vivah"
+category = "major"
+amanta_month = "kartika"
+tithi = 12
+kala = "sunrise"  # Drik Delhi 2027-11-11 (Dwadashi at sunrise)
+
+[[lunar]]
+id = "vaikuntha-chaturdashi"
+name = "Vaikuntha Chaturdashi"
+short_name = "Vaikuntha Ch."
+category = "major"
+amanta_month = "kartika"
+tithi = 14
+kala = "nishita"
+puja = ["nishita_from_tithi"]
+
 # ── Monthly observances ────────────────────────────────────────────────────────
 
 [[lunar]]
@@ -682,3 +815,31 @@ id = "sankranti"
 name = "{sign} Sankranti"
 short_name = "Sankranti"
 sign = "any"
+
+# Solar festivals kept alongside a Sankranti (added 2026-11).
+
+[[solar]]
+id = "lohri"
+name = "Lohri"
+short_name = "Lohri"
+category = "major"
+sign = "makara"
+day_offset = -1  # the evening before Makar Sankranti
+
+[[solar]]
+id = "baisakhi"
+name = "Baisakhi"
+short_name = "Baisakhi"
+category = "major"
+sign = "mesha"
+replaces_sankranti = false
+day_rule = "civil"  # Drik Delhi 2025-04-14 (ingress 3:30 AM); Drik Toronto 2026 says 13 Apr for 12:09 AM 14 Apr (unexplained)
+
+[[solar]]
+id = "vishwakarma-puja"
+name = "Vishwakarma Puja"
+short_name = "Vishwakarma"
+category = "major"
+sign = "kanya"
+replaces_sankranti = false
+day_rule = "civil"  # Drik Toronto 2026-09-16 (ingress 10:28 PM), Delhi 2025-09-17 (1:55 AM)

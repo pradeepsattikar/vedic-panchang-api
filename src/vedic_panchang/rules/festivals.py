@@ -30,6 +30,7 @@ class Kala(StrEnum):
     PURVAHNA = "purvahna"  # first half of daytime
     MADHYAHNA = "madhyahna"  # 3rd of 5 daytime parts
     APARAHNA = "aparahna"  # 4th of 5 daytime parts
+    SAYANKALA = "sayankala"  # 5th of 5 daytime parts (until sunset)
     PRADOSH = "pradosh"  # first fifth of the night after sunset
     NISHITA = "nishita"  # 8th of 15 night muhurtas (around midnight)
     MOONRISE = "moonrise"  # instant of moonrise within the Panchang day
@@ -41,12 +42,16 @@ class TieBreak(StrEnum):
     FIRST = "first"
     SECOND = "second"
     MAX_COVERAGE = "max_coverage"  # the day on which the Tithi covers more of the kala
+    # The first day on which the Tithi covers the whole kala; otherwise the day it prevails at
+    # sunrise (Drik Sita Navami Toronto 2027-05-14: Navami began 1 min into Madhyahna on the 13th).
+    FULL = "full"
 
 
 class AdhikaPolicy(StrEnum):
     NEVER = "never"  # only in regular (Nija) months — yearly festivals
     ONLY = "only"  # only in Adhika months (e.g. Padmini Ekadashi)
     BOTH = "both"  # every month — monthly observances
+    FIRST = "first"  # the Adhika month when there is one, else the Nija month (Ganga Dussehra)
 
 
 class Category(StrEnum):
@@ -75,6 +80,9 @@ class LunarRule:
     puja: tuple[str, ...] = ()
     # One of the Sade Teen (3 1/2) Muhurat days: "full" or "half"; None otherwise.
     sade_teen_muhurat: str | None = None
+    # Kept on the Smarta Ekadashi fast day (the fast moves a day earlier when Dwadashi ends
+    # before the parana sunrise). True for rules with an Ekadashi parana, and Bhishma Panchak.
+    ekadashi_day: bool = False
 
 
 @dataclass(frozen=True)
@@ -87,6 +95,14 @@ class SolarRule:
     category: Category
     sign: int | None  # 0-11, None = every sign
     puja: tuple[str, ...] = ()
+    # Days after (or, if negative, before) the Sankranti's day, e.g. Lohri = -1 (eve of Makar).
+    day_offset: int = 0
+    # False for a festival kept alongside the Sankranti (Baisakhi with Mesha Sankranti); the
+    # generic "{sign} Sankranti" entry is then still listed.
+    replaces_sankranti: bool = True
+    # "sunset": a Sankranti after sunset is kept the next day (default). "civil": kept on the
+    # local calendar date of the Sun's ingress, as Drik does for Vishwakarma Puja and Baisakhi.
+    day_rule: str = "sunset"
 
 
 @dataclass(frozen=True)
@@ -122,6 +138,7 @@ def _lunar(raw: dict) -> LunarRule:
         avoid_bhadra=bool(raw.get("avoid_bhadra", False)),
         puja=tuple(raw.get("puja", ())),
         sade_teen_muhurat=_sade_teen(raw),
+        ekadashi_day=bool(raw.get("ekadashi_day", "parana" in raw.get("puja", ()))),
     )
 
 
@@ -141,7 +158,17 @@ def _solar(raw: dict) -> SolarRule:
         category=Category(raw.get("category", "observance")),
         sign=None if sign == "any" else SIGN_IDS.index(sign),
         puja=tuple(raw.get("puja", ())),
+        day_offset=int(raw.get("day_offset", 0)),
+        replaces_sankranti=bool(raw.get("replaces_sankranti", True)),
+        day_rule=_day_rule(raw),
     )
+
+
+def _day_rule(raw: dict) -> str:
+    value = raw.get("day_rule", "sunset")
+    if value not in ("sunset", "civil"):
+        raise ValueError(f"{raw['id']}: day_rule must be 'sunset' or 'civil'")
+    return value
 
 
 @cache
