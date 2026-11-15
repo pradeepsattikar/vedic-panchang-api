@@ -6,7 +6,7 @@ from functools import cache
 from importlib import resources
 
 GRAHA_IDS = ("surya", "chandra", "mangal", "budha", "guru", "shukra", "shani", "rahu", "ketu")
-HIGHLIGHT_KINDS = ("shani_period", "ingress", "station", "slow", "fast", "moon")
+HIGHLIGHT_KINDS = ("fast", "ingress", "station", "slow", "shani_period")
 
 
 @dataclass(frozen=True)

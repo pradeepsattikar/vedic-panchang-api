@@ -450,11 +450,11 @@ class GocharTransitOut(_Model):
 
 
 class GocharHighlightOut(_Model):
-    kind: str = Field(description="shani_period | ingress | station | slow | fast | moon")
+    kind: str = Field(description="fast | ingress | station | slow | shani_period")
     graha: str | None
     rule_ids: list[str]
     at: datetime | None = Field(description="Instant of an ingress or station")
-    detail: str | None = Field(description="Station direction or Shani period id")
+    detail: str | None = Field(description="ingress, station direction, or Shani period id")
 
 
 class GocharMoonSignOut(_Model):

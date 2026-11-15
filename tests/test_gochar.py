@@ -160,22 +160,21 @@ def test_mesha_judgments(nov16):
 
 
 def test_mesha_highlights_follow_the_fixed_order(nov16):
-    hl = [(h.kind, h.graha, h.rule_ids) for h in nov16.moon_signs[MESHA].highlights]
+    hl = [(h.kind, h.graha, h.rule_ids, h.detail) for h in nov16.moon_signs[MESHA].highlights]
+    moon = ("chandra_h10", "chandra_h11_vedha", "chandra_h12", "chandra_h1_vedha")
     assert hl == [
-        ("shani_period", "shani", ("sade_sati_1",)),
-        ("ingress", "surya", ("surya_h8",)),
-        ("ingress", "shukra", ("shukra_h7",)),
-        ("fast", "budha", ("budha_h7",)),
-        ("fast", "mangal", ("mangal_h5",)),
-        ("slow", "guru", ("guru_h5",)),
-        ("slow", "shani", ("shani_h12",)),
-        ("slow", "rahu", ("rahu_h11_vedha",)),
-        ("slow", "ketu", ("ketu_h5",)),
-        (
-            "moon",
-            "chandra",
-            ("chandra_h10", "chandra_h11_vedha", "chandra_h12", "chandra_h1_vedha"),
-        ),
+        ("fast", "chandra", moon, None),
+        ("fast", "surya", ("surya_h8",), "ingress"),  # Vrishchika from 09:13 Monday
+        ("fast", "surya", ("surya_h7",), None),  # Tula until then (shorter, so second)
+        ("fast", "budha", ("budha_h7",), None),
+        ("fast", "shukra", ("shukra_h6",), None),  # Kanya for 6 days, then Tula
+        ("fast", "shukra", ("shukra_h7",), "ingress"),
+        ("fast", "mangal", ("mangal_h5",), None),
+        ("slow", "guru", ("guru_h5",), None),
+        ("slow", "shani", ("shani_h12",), None),
+        ("slow", "rahu", ("rahu_h11_vedha",), None),
+        ("slow", "ketu", ("ketu_h5",), None),
+        ("shani_period", "shani", ("sade_sati_1",), "sade_sati_1"),
     ]
 
 

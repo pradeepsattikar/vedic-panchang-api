@@ -11,7 +11,7 @@ Steps (each testable on its own):
 3. The rule set's favourable houses; a favourable result is obstructed (Vedha) while another
    graha occupies its Vedha house, except for exempt pairs.
 4. Saturn's standing periods (Sade Sati, Dhaiya).
-5. Highlights in the rule set's fixed order.
+5. Highlights in the rule set's fixed order (fast planets incl. the Moon first).
 """
 
 from collections.abc import Callable
@@ -42,7 +42,7 @@ _BISECTION_STEPS = 40  # 7 days / 2**40: far below a second
 _STATION_GRAHAS = ("mangal", "budha", "guru", "shukra", "shani")  # Sun/Moon never; nodes: mean
 # node always retrograde (true node wobbles daily, so its "stations" are not reported)
 SLOW = ("guru", "shani", "rahu", "ketu")
-FAST = ("surya", "budha", "shukra", "mangal")
+FAST = ("chandra", "surya", "budha", "shukra", "mangal")
 
 
 def house_from_moon(transit_sign: int, moon_sign: int) -> int:
@@ -240,7 +240,7 @@ class Highlight:
     graha: str | None
     rule_ids: tuple[str, ...]
     jd: float | None  # instant of an ingress or station
-    detail: str | None  # station direction, Shani period id
+    detail: str | None  # "ingress", station direction, or Shani period id
 
 
 @dataclass(frozen=True)
@@ -314,32 +314,50 @@ def _shani_flags(rules, spans, moon_sign) -> tuple[ShaniFlag, ...]:
 
 
 def _highlights(rules, transits, shani_flags, all_stations) -> tuple[Highlight, ...]:
+    """Highlights grouped by kind, groups in the rule set's order.
+
+    fast: the Moon (all its periods), then Surya, Budha, Shukra, Mangal. A fast planet that
+          changes sign stays here with one entry per sign held this week, longest stay first
+          (a sign entered this week has ``jd`` = ingress and ``detail`` = "ingress").
+    ingress: sign changes of the slow planets. station, slow, shani_period as named.
+    """
     by_graha: dict[str, list[TransitPeriod]] = {}
     for t in transits:
         by_graha.setdefault(t.graha, []).append(t)
-    moved = {
-        g for g, ps in by_graha.items() if g != "chandra" and any(p.entered_in_window for p in ps)
-    }
     groups: dict[str, list[Highlight]] = {k: [] for k in rules.highlight_order}
-    for flag in shani_flags:
-        groups["shani_period"].append(Highlight("shani_period", "shani", (flag.id,), None, flag.id))
-    for graha in GRAHA_IDS:
-        if graha in moved:
-            for p in by_graha[graha]:
-                if p.entered_in_window:
-                    groups["ingress"].append(
-                        Highlight("ingress", graha, (p.rule_id,), p.start_jd, None)
-                    )
+
+    def standing_or_ingress(kind: str, graha: str) -> None:
+        periods = by_graha[graha]
+        if graha == "chandra" or not any(p.entered_in_window for p in periods):
+            ids = tuple(dict.fromkeys(p.rule_id for p in periods))
+            groups[kind].append(Highlight(kind, graha, ids, None, None))
+            return
+        # The graha changes sign: one entry per sign it occupies, longest stay first. The sign
+        # held at the start has no instant; a sign entered this week carries the ingress.
+        by_sign: dict[int, list[TransitPeriod]] = {}
+        for p in periods:
+            by_sign.setdefault(p.sign, []).append(p)
+        entries = []
+        for ps in by_sign.values():
+            first = ps[0]
+            ids = tuple(dict.fromkeys(p.rule_id for p in ps))
+            entries.append((sum(p.end_jd - p.start_jd for p in ps), first, ids))
+        for _, first, ids in sorted(entries, key=lambda e: (-e[0], e[1].start_jd)):
+            if first.entered_in_window:
+                target = kind if kind == "fast" else "ingress"
+                groups[target].append(Highlight(target, graha, ids, first.start_jd, "ingress"))
+            else:
+                groups[kind].append(Highlight(kind, graha, ids, None, None))
+
+    for graha in FAST:
+        standing_or_ingress("fast", graha)
+    for graha in SLOW:
+        standing_or_ingress("slow", graha)
     for s in all_stations:
         current = next(p for p in by_graha[s.graha] if p.start_jd <= s.jd <= p.end_jd)
         groups["station"].append(Highlight("station", s.graha, (current.rule_id,), s.jd, s.becomes))
-    for kind, members in (("slow", SLOW), ("fast", FAST)):
-        for graha in members:
-            if graha not in moved:
-                ids = tuple(dict.fromkeys(p.rule_id for p in by_graha[graha]))
-                groups[kind].append(Highlight(kind, graha, ids, None, None))
-    moon_ids = tuple(p.rule_id for p in by_graha["chandra"])
-    groups["moon"].append(Highlight("moon", "chandra", moon_ids, None, None))
+    for flag in shani_flags:
+        groups["shani_period"].append(Highlight("shani_period", "shani", (flag.id,), None, flag.id))
     return tuple(h for kind in rules.highlight_order for h in groups[kind])
 
 
