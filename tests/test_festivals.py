@@ -145,3 +145,22 @@ def test_every_short_name_fits_a_calendar_cell(festivals):
     short_names = {f["short_name"] for f in festivals(2026, **DELHI)}
     assert "Durga Asht." in short_names and "Ekadashi" in short_names
     assert all(0 < len(name) <= 13 for name in short_names), sorted(short_names, key=len)[-3:]
+
+
+# Dev Deepawali: lamps at dusk, so Purnima must prevail in Pradosh (not at sunrise).
+# Drik Panchang "Dev Diwali" dates, checked Nov 19, 2026.
+DEV_DEEPAWALI_DRIK = [
+    ("6167865", 2026, "2026-11-23"),  # Toronto: Purnima ends Nov 24 9:54 AM, so Monday's dusk
+    ("6167865", 2025, "2025-11-04"),  # Toronto
+    ("5368361", 2025, "2025-11-04"),  # Los Angeles
+    ("5946768", 2026, "2026-11-23"),  # Edmonton
+    ("1253405", 2026, "2026-11-24"),  # Varanasi: Purnima lasts until 8:23 PM on Nov 24
+    ("1273294", 2027, "2027-11-13"),  # New Delhi: a day before the sunrise Purnima
+    ("1275339", 2028, "2028-11-01"),  # Mumbai
+]
+
+
+@pytest.mark.parametrize(("city_id", "year", "expected"), DEV_DEEPAWALI_DRIK)
+def test_dev_deepawali_follows_purnima_at_pradosh(festivals, city_id, year, expected):
+    dates = {f["festival_id"]: f["date"] for f in festivals(year, city_id=city_id)}
+    assert dates["kartik-purnima"] == expected
