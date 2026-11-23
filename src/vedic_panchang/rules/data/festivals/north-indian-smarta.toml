@@ -879,7 +879,7 @@ day_offset = 1
 [[solar]]
 id = "uttarayan"
 extended = true
-name = "Uttarayan (Kite festival)"
+name = "Uttarayan"
 short_name = "Uttarayan"
 category = "observance"
 sign = "makara"
