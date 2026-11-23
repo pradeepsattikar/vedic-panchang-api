@@ -16,11 +16,13 @@
 # sade_teen_muhurat: "full" or "half" on the 3 1/2 self-auspicious days (Gudi Padwa,
 #      Akshaya Tritiya, Vijayadashami; Bali Pratipada is the half day).
 #
+# Fixed dates ([[fixed]]): month + day of the Gregorian calendar, e.g. a date set by a government.
+#
 # short_name: label for tight spaces such as calendar cells (at most ~12 characters).
 #
 # Any change here MUST bump rule_version.
 
-rule_version = "2026.11.2"
+rule_version = "2026.11.3"  # 2026-11-23: Shiv Jayanti on both dates; batch-1 festivals merged with main
 
 # ── Major festivals ────────────────────────────────────────────────────────────
 
@@ -843,3 +845,25 @@ category = "major"
 sign = "kanya"
 replaces_sankranti = false
 day_rule = "civil"  # Drik Toronto 2026-09-16 (ingress 10:28 PM), Delhi 2025-09-17 (1:55 AM)
+
+# ── Shiv Jayanti: two dates, both shown (founder, 2026-11-23) ─────────────────
+# Chhatrapati Shivaji Maharaj was born at Shivneri on Phalguna Krishna Tritiya, Shaka 1551
+# (19 February 1630). The Government of Maharashtra observes the fixed date worked out from the
+# historical records; many families and groups keep the Tithi of his birth.
+
+[[fixed]]
+id = "shiv-jayanti"
+name = "Shiv Jayanti (official date)"  # Maharashtra Government date, from historical records
+short_name = "Shiv Jayanti"
+category = "observance"
+month = 2
+day = 19
+
+[[lunar]]
+id = "shiv-jayanti-tithi"
+name = "Shiv Jayanti (by Tithi)"  # traditional Hindu calendar date of his birth
+short_name = "Shiv J. Tithi"
+category = "observance"
+amanta_month = "phalguna"
+tithi = 18  # Krishna Tritiya (Purnimanta: Chaitra Krishna Tritiya)
+kala = "sunrise"

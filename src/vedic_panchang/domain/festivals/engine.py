@@ -14,6 +14,7 @@ alternate (Gauna) Ekadashi. Drik Panchang, Prabodhini Ekadashi 2026, Kolkata: fa
 parana Nov 21 12:28-2:40 PM (Gauna Nov 21).
 """
 
+import calendar
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 
@@ -258,6 +259,21 @@ def festivals_for_year(
     claimed = {r.sign for r in festival_set.solar if r.sign is not None and r.replaces_sankranti}
     for rule in festival_set.solar:
         occurrences += _solar_occurrences(rule, events, frames, claimed, profile.ayanamsha)
+
+    for rule in festival_set.fixed:
+        if rule.month == 2 and rule.day == 29 and not calendar.isleap(year):
+            continue
+        occurrences.append(
+            FestivalOccurrence(
+                festival_id=rule.id,
+                occurrence_id=f"{rule.id}:{year}",
+                name=rule.name,
+                short_name=rule.short_name,
+                category=rule.category,
+                date=date(year, rule.month, rule.day),
+                kala=None,
+            )
+        )
 
     in_year = [o for o in occurrences if o.date.year == year]
     # Major festivals first within a day, then by name, for a stable order.

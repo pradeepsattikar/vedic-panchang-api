@@ -7,6 +7,7 @@ system. Tithis are numbered 1-30 (1-15 Shukla, 16-30 Krishna; 15 = Purnima, 30 =
 
 import tomllib
 from dataclasses import dataclass
+from datetime import date
 from enum import StrEnum
 from functools import cache
 from importlib import resources
@@ -106,11 +107,28 @@ class SolarRule:
 
 
 @dataclass(frozen=True)
+class FixedRule:
+    """A fixed Gregorian date, e.g. a date set by a government (Shiv Jayanti, 19 February)."""
+
+    id: str
+    name: str
+    short_name: str
+    category: Category
+    month: int  # 1-12
+    day: int  # 1-31
+
+
+@dataclass(frozen=True)
 class FestivalSet:
     id: str
     rule_version: str
     lunar: tuple[LunarRule, ...]
     solar: tuple[SolarRule, ...]
+    fixed: tuple[FixedRule, ...] = ()
+
+    @property
+    def ids(self) -> set[str]:
+        return {r.id for r in self.lunar + self.solar + self.fixed}
 
 
 def _month(value: str) -> int | None:
@@ -171,6 +189,19 @@ def _day_rule(raw: dict) -> str:
     return value
 
 
+def _fixed(raw: dict) -> FixedRule:
+    month, day = int(raw["month"]), int(raw["day"])
+    date(2024, month, day)  # raises ValueError for an impossible date (2024 allows 29 February)
+    return FixedRule(
+        id=raw["id"],
+        name=raw["name"],
+        short_name=raw.get("short_name", raw["name"]),
+        category=Category(raw.get("category", "observance")),
+        month=month,
+        day=day,
+    )
+
+
 @cache
 def load_festival_set(set_id: str) -> FestivalSet:
     path = resources.files("vedic_panchang.rules").joinpath(f"data/festivals/{set_id}.toml")
@@ -180,8 +211,9 @@ def load_festival_set(set_id: str) -> FestivalSet:
         rule_version=raw["rule_version"],
         lunar=tuple(_lunar(r) for r in raw.get("lunar", [])),
         solar=tuple(_solar(r) for r in raw.get("solar", [])),
+        fixed=tuple(_fixed(r) for r in raw.get("fixed", [])),
     )
-    ids = [r.id for r in festival_set.lunar + festival_set.solar]
+    ids = [r.id for r in festival_set.lunar + festival_set.solar + festival_set.fixed]
     if len(ids) != len(set(ids)):
         raise ValueError(f"{set_id}: duplicate festival ids")
     return festival_set

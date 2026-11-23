@@ -223,9 +223,7 @@ class PanchangService:
         if not self.settings.min_date.year <= year <= self.settings.max_date.year:
             raise DateOutOfRangeError(year, self.settings.min_date, self.settings.max_date)
         festival_set = load_festival_set(profile.festival_set)
-        if festival_id is not None and festival_id not in {
-            r.id for r in festival_set.lunar + festival_set.solar
-        }:
+        if festival_id is not None and festival_id not in festival_set.ids:
             raise FestivalNotFoundError(festival_id)
         occurrences = self._festivals(year, place.location, profile, festival_set)
         selected = tuple(

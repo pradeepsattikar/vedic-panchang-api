@@ -164,3 +164,26 @@ DEV_DEEPAWALI_DRIK = [
 def test_dev_deepawali_follows_purnima_at_pradosh(festivals, city_id, year, expected):
     dates = {f["festival_id"]: f["date"] for f in festivals(year, city_id=city_id)}
     assert dates["kartik-purnima"] == expected
+
+
+def test_shiv_jayanti_official_date_and_tithi(client):
+    # Official (Maharashtra Government) date is fixed at 19 February; the Tithi date is
+    # Phalguna Krishna Tritiya at sunrise: Pune 6 Mar 2026 (Tritiya 5 Mar 17:04 - 6 Mar 17:53 IST),
+    # Toronto 5 Mar 2026 (Tritiya begins 06:34 EST, before sunrise).
+    def dates(city_id, year):
+        body = client.get("/v1/festivals", params={"city_id": city_id, "year": year}).json()
+        return {
+            f["festival_id"]: f["date"]
+            for f in body["festivals"]
+            if f["festival_id"].startswith("shiv-jayanti")
+        }
+
+    assert dates("1259229", 2026) == {
+        "shiv-jayanti": "2026-02-19",
+        "shiv-jayanti-tithi": "2026-03-06",
+    }
+    assert dates("6167865", 2026) == {
+        "shiv-jayanti": "2026-02-19",
+        "shiv-jayanti-tithi": "2026-03-05",
+    }
+    assert dates("1259229", 2025)["shiv-jayanti-tithi"] == "2025-03-17"
