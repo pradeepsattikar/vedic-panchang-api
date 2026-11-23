@@ -33,6 +33,10 @@ def get_place(
 
 PlaceParam = Annotated[Place, Depends(get_place)]
 ProfileParam = Annotated[str | None, Query(description="Calculation profile ID")]
+ExtendedParam = Annotated[
+    bool,
+    Query(description="Also list extended festivals (regional and newly added; not by default)"),
+]
 
 
 def _context(place: Place, provenance: Provenance) -> dict:
@@ -57,6 +61,7 @@ def daily_panchang(
         Query(alias="date", description="Local civil date (YYYY-MM-DD). Default: today there"),
     ] = None,
     profile: ProfileParam = None,
+    include_extended: ExtendedParam = False,
 ):
     """Daily Panchang for a catalogue city or any coordinates.
 
@@ -64,7 +69,7 @@ def daily_panchang(
     (sunrise to next sunrise) is listed with start and end times. Festivals and
     observances falling on the date are listed under `observances`.
     """
-    result = service.daily(place, date_, profile)
+    result = service.daily(place, date_, profile, include_extended)
     p = result.panchang
     event = schemas.CelestialEventOut.model_validate
     return schemas.DailyPanchangOut(
@@ -101,10 +106,11 @@ def month_panchang(
     year: Annotated[int | None, Query(description="Default: current year there")] = None,
     month: Annotated[int | None, Query(ge=1, le=12, description="Default: current month")] = None,
     profile: ProfileParam = None,
+    include_extended: ExtendedParam = False,
 ):
     """One compact summary per day of a month (Tithi and Nakshatra at sunrise, sunrise,
     sunset, Masa, festivals), for calendar views."""
-    result = service.month(place, year, month, profile)
+    result = service.month(place, year, month, profile, include_extended)
     event = schemas.CelestialEventOut.model_validate
     span = schemas.SpanOut.model_validate
     return schemas.MonthOut(
@@ -138,8 +144,10 @@ def month_panchang(
     )
 
 
-def _festivals_response(service, place, year, profile, festival_id=None, category=None):
-    result = service.festivals(place, year, profile, festival_id, category)
+def _festivals_response(
+    service, place, year, profile, festival_id=None, category=None, include_extended=False
+):
+    result = service.festivals(place, year, profile, festival_id, category, include_extended)
     return schemas.FestivalsOut(
         request=schemas.FestivalsRequestOut(
             **place.request,
@@ -164,13 +172,16 @@ def festivals(
     year: YearParam = None,
     category: Annotated[Literal["major", "observance"] | None, Query()] = None,
     profile: ProfileParam = None,
+    include_extended: ExtendedParam = False,
 ):
     """Festivals and observances in a year, with their local dates at this place.
 
     Dates can correctly differ between places: each festival falls on the local day on
     which its Tithi prevails during the required part of the day (`kala`).
     """
-    return _festivals_response(service, place, year, profile, category=category)
+    return _festivals_response(
+        service, place, year, profile, category=category, include_extended=include_extended
+    )
 
 
 @router.get("/festivals/{festival_id}", response_model=schemas.FestivalsOut, tags=["festivals"])

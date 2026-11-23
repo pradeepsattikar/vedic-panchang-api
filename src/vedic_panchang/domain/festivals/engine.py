@@ -14,6 +14,7 @@ alternate (Gauna) Ekadashi. Drik Panchang, Prabodhini Ekadashi 2026, Kolkata: fa
 parana Nov 21 12:28-2:40 PM (Gauna Nov 21).
 """
 
+import calendar
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 
@@ -71,6 +72,7 @@ class FestivalOccurrence:
     sankranti_time: datetime | None = None  # solar rules
     puja_times: tuple[PujaTime, ...] = ()
     sade_teen_muhurat: str | None = None  # "full" or "half" on the 3 1/2 auspicious days
+    extended: bool = False  # listed only when the request asks for extended festivals
 
 
 def _matches(rule: LunarRule, inst: TithiInstance) -> bool:
@@ -112,6 +114,12 @@ def _choose_day(rule: LunarRule, inst: TithiInstance, frames: DayFrames, ayanams
                     scored.append((day, share))
         day += timedelta(days=1)
 
+    if rule.tie is TieBreak.FULL:
+        full = [day for day, share in scored if share >= 1.0 - 1e-9]
+        if full:
+            return full[0]
+        if udaya is not None:
+            return udaya
     if not scored:
         return udaya or home
     if len(scored) == 1 or rule.tie is TieBreak.FIRST:
@@ -169,14 +177,20 @@ def _puja_times(recipes, frames, ayanamsha, day, tithi=None, next_tithi=None, sa
 
 def _lunar_occurrences(rule, instances, frames, profile) -> list[FestivalOccurrence]:
     result = []
+    adhika_jd: float | None = None  # last Adhika match, for AdhikaPolicy.FIRST
     for position, inst in enumerate(instances):
         if not _matches(rule, inst):
             continue
+        if rule.adhika is AdhikaPolicy.FIRST:
+            if inst.month.is_adhika:
+                adhika_jd = inst.start_jd
+            elif adhika_jd is not None and inst.start_jd - adhika_jd < 45:
+                continue  # already kept in the Adhika month
         day = _choose_day(rule, inst, frames, profile.ayanamsha)
         if day is None:
             continue  # no sunrise around this date at this location
         following = instances[position + 1] if position + 1 < len(instances) else None
-        if "parana" in rule.puja:
+        if rule.ekadashi_day:
             day = _ekadashi_day(day, inst, following, frames)
         result.append(
             FestivalOccurrence(
@@ -190,6 +204,7 @@ def _lunar_occurrences(rule, instances, frames, profile) -> list[FestivalOccurre
                 tithi=_tithi_span(inst, frames),
                 masa=inst.months,
                 sade_teen_muhurat=rule.sade_teen_muhurat,
+                extended=rule.extended,
                 puja_times=_puja_times(
                     rule.puja,
                     frames,
@@ -213,8 +228,9 @@ def _solar_occurrences(rule: SolarRule, events: tuple[Sankranti, ...], frames: D
             continue  # a sign-specific rule (e.g. Makar Sankranti) covers it
         day = frames.local_date(event.jd)
         frame = frames.frame(day)
-        if frame is not None and event.jd >= frame.sunset:
+        if rule.day_rule == "sunset" and frame is not None and event.jd >= frame.sunset:
             day += timedelta(days=1)  # after sunset: observed the next day
+        day += timedelta(days=rule.day_offset)
         result.append(
             FestivalOccurrence(
                 festival_id=rule.id,
@@ -226,6 +242,7 @@ def _solar_occurrences(rule: SolarRule, events: tuple[Sankranti, ...], frames: D
                 kala=None,
                 sankranti_time=from_jd(event.jd, frames.tz),
                 puja_times=_puja_times(rule.puja, frames, ayanamsha, day, sankranti_jd=event.jd),
+                extended=rule.extended,
             )
         )
     return result
@@ -242,9 +259,25 @@ def festivals_for_year(
     occurrences: list[FestivalOccurrence] = []
     for rule in festival_set.lunar:
         occurrences += _lunar_occurrences(rule, instances, frames, profile)
-    claimed = {r.sign for r in festival_set.solar if r.sign is not None}
+    claimed = {r.sign for r in festival_set.solar if r.sign is not None and r.replaces_sankranti}
     for rule in festival_set.solar:
         occurrences += _solar_occurrences(rule, events, frames, claimed, profile.ayanamsha)
+
+    for rule in festival_set.fixed:
+        if rule.month == 2 and rule.day == 29 and not calendar.isleap(year):
+            continue
+        occurrences.append(
+            FestivalOccurrence(
+                festival_id=rule.id,
+                occurrence_id=f"{rule.id}:{year}",
+                name=rule.name,
+                short_name=rule.short_name,
+                category=rule.category,
+                date=date(year, rule.month, rule.day),
+                kala=None,
+                extended=rule.extended,
+            )
+        )
 
     in_year = [o for o in occurrences if o.date.year == year]
     # Major festivals first within a day, then by name, for a stable order.

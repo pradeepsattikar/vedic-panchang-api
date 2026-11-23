@@ -139,6 +139,9 @@ class FestivalOut(_Model):
     sade_teen_muhurat: str | None = Field(
         None, description="'full' or 'half' on the Sade Teen (3 1/2) Muhurat days, else null"
     )
+    extended: bool = Field(
+        False, description="Extended festival: listed only with include_extended=true"
+    )
 
 
 class ShubhYogaOut(_Model):

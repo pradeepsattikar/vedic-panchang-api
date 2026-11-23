@@ -172,7 +172,9 @@ class PanchangService:
         raise LocationRequestError("Give either city_id, or all of lat, lon and tz")
 
     # ── use cases ────────────────────────────────────────────
-    def daily(self, place: Place, day: date | None, profile_id: str | None) -> PanchangResult:
+    def daily(
+        self, place: Place, day: date | None, profile_id: str | None, include_extended: bool = False
+    ) -> PanchangResult:
         profile = self.profiles.get(profile_id)
         # "Today" is the civil date at the requested location, not on the server.
         day = day or datetime.now(place.location.tz).date()
@@ -182,12 +184,17 @@ class PanchangService:
         return PanchangResult(
             place=place,
             panchang=self._calculate(day, place.location, profile),
-            observances=tuple(o for o in year if o.date == day),
+            observances=tuple(o for o in year if o.date == day and _listed(o, include_extended)),
             provenance=self._provenance(profile, festival_set),
         )
 
     def month(
-        self, place: Place, year: int | None, month: int | None, profile_id: str | None
+        self,
+        place: Place,
+        year: int | None,
+        month: int | None,
+        profile_id: str | None,
+        include_extended: bool = False,
     ) -> MonthResult:
         profile = self.profiles.get(profile_id)
         today = datetime.now(place.location.tz).date()
@@ -204,7 +211,9 @@ class PanchangService:
             days.append(
                 DaySummary(
                     panchang=self._calculate(day, place.location, profile),
-                    observances=tuple(o for o in observances if o.date == day),
+                    observances=tuple(
+                        o for o in observances if o.date == day and _listed(o, include_extended)
+                    ),
                 )
             )
             day += timedelta(days=1)
@@ -217,15 +226,14 @@ class PanchangService:
         profile_id: str | None,
         festival_id: str | None = None,
         category: str | None = None,
+        include_extended: bool = False,
     ) -> FestivalsResult:
         profile = self.profiles.get(profile_id)
         year = year or datetime.now(place.location.tz).year
         if not self.settings.min_date.year <= year <= self.settings.max_date.year:
             raise DateOutOfRangeError(year, self.settings.min_date, self.settings.max_date)
         festival_set = load_festival_set(profile.festival_set)
-        if festival_id is not None and festival_id not in {
-            r.id for r in festival_set.lunar + festival_set.solar
-        }:
+        if festival_id is not None and festival_id not in festival_set.ids:
             raise FestivalNotFoundError(festival_id)
         occurrences = self._festivals(year, place.location, profile, festival_set)
         selected = tuple(
@@ -233,6 +241,8 @@ class PanchangService:
             for o in occurrences
             if (festival_id is None or o.festival_id == festival_id)
             and (category is None or o.category == category)
+            # asking for one festival by id always returns it
+            and (festival_id is not None or _listed(o, include_extended))
             and self.settings.min_date <= o.date <= self.settings.max_date
         )
         return FestivalsResult(place, year, selected, self._provenance(profile, festival_set))
@@ -284,3 +294,8 @@ class PanchangService:
             timezone_data_version=self.timezone_data_version,
             generated_at=datetime.now(UTC).replace(microsecond=0),
         )
+
+
+def _listed(occurrence: FestivalOccurrence, include_extended: bool) -> bool:
+    """Extended festivals (not yet shown in the app) only when the request asks for them."""
+    return include_extended or not occurrence.extended

@@ -97,7 +97,7 @@ def test_counts_per_year(festivals):
 
 def test_sankranti_after_sunset_moves_to_next_day(festivals):
     for f in festivals(2025, **DELHI):
-        if f["sankranti_time"]:
+        if f["sankranti_time"] and f["festival_id"] != "lohri":  # Lohri is the eve
             assert f["date"] >= f["sankranti_time"][:10]
 
 
@@ -142,7 +142,7 @@ def test_festival_errors(client, path, params, status, code):
 
 
 def test_every_short_name_fits_a_calendar_cell(festivals):
-    short_names = {f["short_name"] for f in festivals(2026, **DELHI)}
+    short_names = {f["short_name"] for y in (2025, 2026) for f in festivals(y, **DELHI)}
     assert "Durga Asht." in short_names and "Ekadashi" in short_names
     assert all(0 < len(name) <= 13 for name in short_names), sorted(short_names, key=len)[-3:]
 
@@ -164,3 +164,68 @@ DEV_DEEPAWALI_DRIK = [
 def test_dev_deepawali_follows_purnima_at_pradosh(festivals, city_id, year, expected):
     dates = {f["festival_id"]: f["date"] for f in festivals(year, city_id=city_id)}
     assert dates["kartik-purnima"] == expected
+
+
+def test_shiv_jayanti_official_date_and_tithi(client):
+    # Official (Maharashtra Government) date is fixed at 19 February; the Tithi date is
+    # Phalguna Krishna Tritiya at sunrise: Pune 6 Mar 2026 (Tritiya 5 Mar 17:04 - 6 Mar 17:53 IST),
+    # Toronto 5 Mar 2026 (Tritiya begins 06:34 EST, before sunrise).
+    def dates(city_id, year):
+        params = {"city_id": city_id, "year": year, "include_extended": "true"}
+        body = client.get("/v1/festivals", params=params).json()
+        return {
+            f["festival_id"]: f["date"]
+            for f in body["festivals"]
+            if f["festival_id"].startswith("shiv-jayanti")
+        }
+
+    assert dates("1259229", 2026) == {
+        "shiv-jayanti": "2026-02-19",
+        "shiv-jayanti-tithi": "2026-03-06",
+    }
+    assert dates("6167865", 2026) == {
+        "shiv-jayanti": "2026-02-19",
+        "shiv-jayanti-tithi": "2026-03-05",
+    }
+    assert dates("1259229", 2025)["shiv-jayanti-tithi"] == "2025-03-17"
+
+
+def test_gta_regional_festivals_2026(client):
+    # Rules added 2026-11-23 for the printed Toronto Panchang; dates from the API, to be checked
+    # against Drik / regional calendars before print. Guards against accidental rule changes.
+    params = {"city_id": "1261481", "year": 2026, "include_extended": "true"}
+    body = client.get("/v1/festivals", params=params).json()
+    got = {f["festival_id"]: f["date"] for f in body["festivals"]}
+    assert got["sheetala-ashtami"] == "2026-03-11"
+    assert got["vat-purnima"] == "2026-06-29"
+    assert got["shitala-satam"] == "2026-09-03"  # day before Janmashtami (4 Sep)
+    assert got["kali-puja"] == "2026-11-08"
+    assert got["labh-pancham"] == "2026-11-14"
+    assert got["jalaram-jayanti"] == "2026-11-16"
+
+
+def test_extended_festivals_only_on_request(client, daily):
+    # Founder 2026-11-23: festivals not yet in the app stay out of the default answers.
+    city = {"city_id": "1261481"}
+    default = client.get("/v1/festivals", params={**city, "year": 2026}).json()["festivals"]
+    extended = client.get(
+        "/v1/festivals", params={**city, "year": 2026, "include_extended": "true"}
+    ).json()["festivals"]
+    assert not any(f["extended"] for f in default)
+    assert {"kali-puja", "tulsi-vivah", "shiv-jayanti"} <= {f["festival_id"] for f in extended}
+    # daily and month follow the same switch
+    ids = {o["festival_id"] for o in daily("2026-11-08", **city)["observances"]}
+    assert "kali-puja" not in ids
+    ids = {
+        o["festival_id"]
+        for o in daily("2026-11-08", **city, include_extended="true")["observances"]
+    }
+    assert "kali-puja" in ids
+    month = client.get(
+        "/v1/panchang/month",
+        params={**city, "year": 2026, "month": 11, "include_extended": "true"},
+    ).json()
+    assert any(o["festival_id"] == "kali-puja" for d in month["days"] for o in d["observances"])
+    # asking for one festival by id always answers
+    one = client.get("/v1/festivals/kali-puja", params={**city, "year": 2026})
+    assert one.status_code == 200 and one.json()["festivals"][0]["date"] == "2026-11-08"

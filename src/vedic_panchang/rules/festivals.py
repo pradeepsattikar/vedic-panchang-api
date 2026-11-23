@@ -7,6 +7,7 @@ system. Tithis are numbered 1-30 (1-15 Shukla, 16-30 Krishna; 15 = Purnima, 30 =
 
 import tomllib
 from dataclasses import dataclass
+from datetime import date
 from enum import StrEnum
 from functools import cache
 from importlib import resources
@@ -30,6 +31,7 @@ class Kala(StrEnum):
     PURVAHNA = "purvahna"  # first half of daytime
     MADHYAHNA = "madhyahna"  # 3rd of 5 daytime parts
     APARAHNA = "aparahna"  # 4th of 5 daytime parts
+    SAYANKALA = "sayankala"  # 5th of 5 daytime parts (until sunset)
     PRADOSH = "pradosh"  # first fifth of the night after sunset
     NISHITA = "nishita"  # 8th of 15 night muhurtas (around midnight)
     MOONRISE = "moonrise"  # instant of moonrise within the Panchang day
@@ -41,12 +43,16 @@ class TieBreak(StrEnum):
     FIRST = "first"
     SECOND = "second"
     MAX_COVERAGE = "max_coverage"  # the day on which the Tithi covers more of the kala
+    # The first day on which the Tithi covers the whole kala; otherwise the day it prevails at
+    # sunrise (Drik Sita Navami Toronto 2027-05-14: Navami began 1 min into Madhyahna on the 13th).
+    FULL = "full"
 
 
 class AdhikaPolicy(StrEnum):
     NEVER = "never"  # only in regular (Nija) months — yearly festivals
     ONLY = "only"  # only in Adhika months (e.g. Padmini Ekadashi)
     BOTH = "both"  # every month — monthly observances
+    FIRST = "first"  # the Adhika month when there is one, else the Nija month (Ganga Dussehra)
 
 
 class Category(StrEnum):
@@ -75,6 +81,10 @@ class LunarRule:
     puja: tuple[str, ...] = ()
     # One of the Sade Teen (3 1/2) Muhurat days: "full" or "half"; None otherwise.
     sade_teen_muhurat: str | None = None
+    extended: bool = False  # only listed when the request asks for extended festivals
+    # Kept on the Smarta Ekadashi fast day (the fast moves a day earlier when Dwadashi ends
+    # before the parana sunrise). True for rules with an Ekadashi parana, and Bhishma Panchak.
+    ekadashi_day: bool = False
 
 
 @dataclass(frozen=True)
@@ -87,6 +97,28 @@ class SolarRule:
     category: Category
     sign: int | None  # 0-11, None = every sign
     puja: tuple[str, ...] = ()
+    # Days after (or, if negative, before) the Sankranti's day, e.g. Lohri = -1 (eve of Makar).
+    day_offset: int = 0
+    # False for a festival kept alongside the Sankranti (Baisakhi with Mesha Sankranti); the
+    # generic "{sign} Sankranti" entry is then still listed.
+    replaces_sankranti: bool = True
+    # "sunset": a Sankranti after sunset is kept the next day (default). "civil": kept on the
+    # local calendar date of the Sun's ingress, as Drik does for Vishwakarma Puja and Baisakhi.
+    day_rule: str = "sunset"
+    extended: bool = False
+
+
+@dataclass(frozen=True)
+class FixedRule:
+    """A fixed Gregorian date, e.g. a date set by a government (Shiv Jayanti, 19 February)."""
+
+    id: str
+    name: str
+    short_name: str
+    category: Category
+    month: int  # 1-12
+    day: int  # 1-31
+    extended: bool = False
 
 
 @dataclass(frozen=True)
@@ -95,6 +127,11 @@ class FestivalSet:
     rule_version: str
     lunar: tuple[LunarRule, ...]
     solar: tuple[SolarRule, ...]
+    fixed: tuple[FixedRule, ...] = ()
+
+    @property
+    def ids(self) -> set[str]:
+        return {r.id for r in self.lunar + self.solar + self.fixed}
 
 
 def _month(value: str) -> int | None:
@@ -122,6 +159,8 @@ def _lunar(raw: dict) -> LunarRule:
         avoid_bhadra=bool(raw.get("avoid_bhadra", False)),
         puja=tuple(raw.get("puja", ())),
         sade_teen_muhurat=_sade_teen(raw),
+        extended=bool(raw.get("extended", False)),
+        ekadashi_day=bool(raw.get("ekadashi_day", "parana" in raw.get("puja", ()))),
     )
 
 
@@ -141,6 +180,31 @@ def _solar(raw: dict) -> SolarRule:
         category=Category(raw.get("category", "observance")),
         sign=None if sign == "any" else SIGN_IDS.index(sign),
         puja=tuple(raw.get("puja", ())),
+        day_offset=int(raw.get("day_offset", 0)),
+        replaces_sankranti=bool(raw.get("replaces_sankranti", True)),
+        day_rule=_day_rule(raw),
+        extended=bool(raw.get("extended", False)),
+    )
+
+
+def _day_rule(raw: dict) -> str:
+    value = raw.get("day_rule", "sunset")
+    if value not in ("sunset", "civil"):
+        raise ValueError(f"{raw['id']}: day_rule must be 'sunset' or 'civil'")
+    return value
+
+
+def _fixed(raw: dict) -> FixedRule:
+    month, day = int(raw["month"]), int(raw["day"])
+    date(2024, month, day)  # raises ValueError for an impossible date (2024 allows 29 February)
+    return FixedRule(
+        id=raw["id"],
+        name=raw["name"],
+        short_name=raw.get("short_name", raw["name"]),
+        category=Category(raw.get("category", "observance")),
+        month=month,
+        day=day,
+        extended=bool(raw.get("extended", False)),
     )
 
 
@@ -153,8 +217,9 @@ def load_festival_set(set_id: str) -> FestivalSet:
         rule_version=raw["rule_version"],
         lunar=tuple(_lunar(r) for r in raw.get("lunar", [])),
         solar=tuple(_solar(r) for r in raw.get("solar", [])),
+        fixed=tuple(_fixed(r) for r in raw.get("fixed", [])),
     )
-    ids = [r.id for r in festival_set.lunar + festival_set.solar]
+    ids = [r.id for r in festival_set.lunar + festival_set.solar + festival_set.fixed]
     if len(ids) != len(set(ids)):
         raise ValueError(f"{set_id}: duplicate festival ids")
     return festival_set

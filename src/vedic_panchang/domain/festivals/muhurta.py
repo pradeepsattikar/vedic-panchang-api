@@ -117,6 +117,19 @@ def _kala(
     return recipe
 
 
+def _from_tithi_start(recipe: Callable[[Context], Span | None]) -> Callable[[Context], Span | None]:
+    """An uncut part that starts no earlier than the Tithi (but may run past its end)."""
+
+    def wrapped(ctx: Context) -> Span | None:
+        span = recipe(ctx)
+        if span is None or ctx.tithi is None:
+            return span
+        start = max(span[0], ctx.tithi.start_jd)
+        return (start, span[1]) if start < span[1] else None
+
+    return wrapped
+
+
 def _muhurta(n: int) -> Callable[[Context], Span | None]:
     """The n-th (1-based) of the 15 daytime muhurtas, while the Tithi prevails."""
     return _kala((n - 1) / 15, n / 15)
@@ -302,11 +315,19 @@ RECIPES: dict[str, Callable[[Context], Span | None]] = {
     "pratahkala": _kala(0, 1 / 5),  # Drik Hartalika Teej 2025-08-26: 5:56-8:31 AM
     # Not cut: Drik Vasant Panchami 2025-02-02 gives 7:09 AM-12:35 PM, Panchami from 9:14 AM.
     "purvahna": _kala(0, 1 / 2, cut=False),
+    # Cut to the Tithi: Drik Akshaya Navami 2025-10-31: 6:32-10:03 AM (Navami ends 10:03 AM).
+    "purvahna_tithi": _kala(0, 1 / 2),
     "madhyahna": _kala(2 / 5, 3 / 5),  # Drik Ganesh Chaturthi 2025-08-27: 11:05 AM-1:40 PM
+    # Not cut: Drik Radha Ashtami 2027-09-08: 11:03 AM-1:34 PM although Ashtami ends 12:44 PM.
+    "madhyahna_uncut": _kala(2 / 5, 3 / 5, cut=False),
     "aparahna": _kala(3 / 5, 4 / 5),  # Drik Dussehra 2025-10-02: 1:21-3:44 PM
     "sayankala": _kala(4 / 5, 1),  # Drik Govardhan Puja 2025-10-22: 3:29-5:44 PM
     "pradosh": _kala(0, 1 / 5, night=True),  # Drik Brampton 2026-10-23: 6:23-9:03 PM
     "nishita": _kala(7 / 15, 8 / 15, night=True),  # Drik Janmashtami 2025: 12:04-12:47 AM
+    # From the Tithi's start, not cut at its end: Drik Vaikuntha Chaturdashi New Delhi
+    # 2026-11-23: 11:41 PM-12:35 AM (Tithi ends ~11:42 PM); Toronto 2027-11-11: 11:50 PM-12:30 AM
+    # (Tithi begins 11:50 PM).
+    "nishita_from_tithi": _from_tithi_start(_kala(7 / 15, 8 / 15, night=True, cut=False)),
     "kutup": _muhurta(8),  # Shraddha: Drik 2025-09-20: 11:50 AM-12:39 PM
     "rohina": _muhurta(9),
     "abhijit": _muhurta(8),  # Ghatasthapana alternative: Drik 2025-09-22: 11:49 AM-12:38 PM

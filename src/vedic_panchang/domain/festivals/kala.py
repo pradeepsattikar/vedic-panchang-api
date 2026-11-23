@@ -80,6 +80,8 @@ class DayFrames:
                 return sunrise + 2 * day / 5, sunrise + 3 * day / 5
             case Kala.APARAHNA:
                 return sunrise + 3 * day / 5, sunrise + 4 * day / 5
+            case Kala.SAYANKALA:
+                return sunrise + 4 * day / 5, sunset
             case Kala.PRADOSH:
                 return sunset, sunset + night / 5
             case Kala.NISHITA:
