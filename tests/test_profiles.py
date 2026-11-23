@@ -74,8 +74,10 @@ def test_festival_dates_match_between_profiles(client):
     def dates(profile: str | None) -> list[tuple[str, str]]:
         params = {"year": 2026, "city_id": PUNE} | ({"profile": profile} if profile else {})
         body = client.get("/v1/festivals", params=params).json()
-        return [(f["occurrence_id"], f["date"]) for f in body["festivals"]]
+        return sorted((f["occurrence_id"], f["date"]) for f in body["festivals"])
 
+    # Same occurrences on the same days; only the order within a day can differ, because names
+    # such as "{masa} Amavasya" sort differently in Amanta and Purnimanta.
     assert dates(MH) == dates(None)
 
 
