@@ -53,7 +53,8 @@ docker run -p 8000:8000 vedic-panchang-api
 | `GET /v1/meta` | Versions, profiles, supported date range, catalogue info |
 | `GET /health` | Liveness check |
 
-Optional on daily and festival requests: `profile` (default `north-indian-smarta`). If
+Optional on daily, month, festival and muhurta requests: `profile` — `north-indian-smarta`
+(default; Purnimanta month names) or `maharashtrian-smarta` (Amanta month names). If
 `date`/`year` is omitted, the API uses today's date at the requested location. Daily
 responses list that day's festivals under `observances`.
 

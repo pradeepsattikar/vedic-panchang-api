@@ -44,6 +44,7 @@ class ProfileOut(_Model):
     festival_convention: str
     day_anchor: str
     festival_set: str
+    vikram_year_start: str
 
 
 class EngineOut(_Model):
@@ -179,9 +180,26 @@ class RequestContextOut(BaseModel):
     profile: str
 
 
+class SamvatsaraOut(_Model):
+    number: int = Field(description="1 = Prabhava ... 60 = Akshaya")
+    id: str
+    name: str
+
+
 class YearInfoOut(_Model):
-    vikram_samvat: int = Field(description="Begins at Chaitra Shukla Pratipada")
+    vikram_samvat: int = Field(
+        description="Begins at Chaitra Shukla Pratipada, or at Kartika Shukla Pratipada (the day "
+        "after Diwali) when vikram_year_start is 'kartika'"
+    )
+    vikram_year_start: str = Field(description="'chaitra' (North India) or 'kartika' (Maharashtra)")
     shaka_samvat: int = Field(description="Shalivahana Shaka; begins at Chaitra Shukla Pratipada")
+    vikram_samvatsara: SamvatsaraOut = Field(
+        description="North Indian year name: Jupiter (Barhaspatya) cycle at Mesha Sankranti, "
+        "for the Chaitradi Vikram year"
+    )
+    shaka_samvatsara: SamvatsaraOut = Field(
+        description="Maharashtrian / South Indian year name: fixed cycle on the Shaka year"
+    )
     ritu: str = Field(description="Vedic Ritu by lunar month")
     ayana: str = Field(description="Uttarayana (Sun in Makara..Mithuna, sidereal) or Dakshinayana")
 

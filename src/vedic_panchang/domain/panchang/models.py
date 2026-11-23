@@ -6,6 +6,7 @@ from enum import StrEnum
 
 from vedic_panchang.domain.panchang.grahas import GrahaPositions
 from vedic_panchang.domain.panchang.masa import LunarMonths
+from vedic_panchang.domain.panchang.samvatsara import Samvatsara
 
 
 class EventStatus(StrEnum):
@@ -85,8 +86,12 @@ class Vara:
 class YearInfo:
     """Samvat years, Ritu and Ayana at sunrise."""
 
-    vikram_samvat: int  # begins at Chaitra Shukla Pratipada
+    vikram_samvat: int  # begins at Chaitra or Kartika Shukla Pratipada (vikram_year_start)
+    vikram_year_start: str  # "chaitra" or "kartika", from the profile
     shaka_samvat: int  # Shalivahana Shaka, begins at Chaitra Shukla Pratipada
+    # North Indian name (Jupiter cycle, at Mesha Sankranti) of the Chaitradi Vikram year
+    vikram_samvatsara: Samvatsara
+    shaka_samvatsara: Samvatsara  # Maharashtrian / South Indian name (fixed cycle)
     ritu: str  # Vedic Ritu by lunar month
     ayana: str  # Uttarayana while the Sun is in Makara..Mithuna (sidereal), else Dakshinayana
 

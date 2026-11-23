@@ -33,6 +33,7 @@ from vedic_panchang.domain.panchang.models import (
     Vara,
     YearInfo,
 )
+from vedic_panchang.domain.panchang.samvatsara import shaka_samvatsara, vikram_samvatsara
 from vedic_panchang.domain.panchang.shubh import shubh_yogas
 from vedic_panchang.domain.panchang.spans import RawSpan, spans_over
 from vedic_panchang.domain.panchang.timings import day_timings
@@ -204,7 +205,7 @@ class _Calculation:
         yogas = ()
         if basis is DayWindowBasis.SUNRISE_TO_NEXT_SUNRISE:
             yogas = shubh_yogas(
-                load_shubh_rules(self.profile.festival_set),
+                load_shubh_rules(self.profile.shubh_set),
                 weekday,
                 window.start,
                 window.end,
@@ -261,15 +262,24 @@ class _Calculation:
         )
 
     def year_info(self, amanta_month: int, sun_longitude: float) -> YearInfo:
-        """The Samvat year turns at Chaitra Shukla Pratipada (the start of Amanta Chaitra):
-        January to April dates still in an Amanta month from Kartika to Phalguna belong to the old year
-        (early January can still be Margashirsha, e.g. 2027-01-01..07)."""
-        old_year = self.day.month <= 4 and amanta_month >= 8
-        vikram = self.day.year + (56 if old_year else 57)
+        """Shaka and North Indian Vikram years turn at Chaitra Shukla Pratipada (the start of
+        Amanta Chaitra): January to June dates still in Kartika..Phalguna belong to the old year
+        (early January can still be Margashirsha, e.g. 2027-01-01..07).
+        The Kartikadi Vikram year (Maharashtra, Gujarat) turns at Kartika Shukla Pratipada."""
+        old_year = self.day.month <= 6 and amanta_month >= 8
+        chaitradi = self.day.year + (56 if old_year else 57)
+        if self.profile.vikram_year_start == "kartika":
+            new_year = self.day.month > 6 and amanta_month >= 8
+            vikram = self.day.year + (57 if new_year else 56)
+        else:
+            vikram = chaitradi
         uttarayana = int(sun_longitude // 30) in (9, 10, 11, 0, 1, 2)
         return YearInfo(
             vikram_samvat=vikram,
-            shaka_samvat=vikram - 135,
+            vikram_year_start=self.profile.vikram_year_start,
+            shaka_samvat=chaitradi - 135,
+            vikram_samvatsara=vikram_samvatsara(chaitradi, self.profile.ayanamsha),
+            shaka_samvatsara=shaka_samvatsara(chaitradi - 135),
             ritu=names.RITUS[(amanta_month - 1) // 2],
             ayana="Uttarayana" if uttarayana else "Dakshinayana",
         )

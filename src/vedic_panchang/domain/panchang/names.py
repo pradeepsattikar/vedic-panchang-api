@@ -71,4 +71,20 @@ RASHIS = (
 )  # fmt: skip
 
 # Vedic Ritu by (Amanta) lunar month: Chaitra-Vaishakha Vasanta ... Magha-Phalguna Shishira.
+# The 60-year cycle, from Prabhava. Spellings follow Drik Panchang where it shows them.
+SAMVATSARAS = (
+    "Prabhava", "Vibhava", "Shukla", "Pramoda", "Prajapati",
+    "Angirasa", "Shrimukha", "Bhava", "Yuva", "Dhata",
+    "Ishvara", "Bahudhanya", "Pramathi", "Vikrama", "Vrisha",
+    "Chitrabhanu", "Svabhanu", "Tarana", "Parthiva", "Vyaya",
+    "Sarvajit", "Sarvadhari", "Virodhi", "Vikriti", "Khara",
+    "Nandana", "Vijaya", "Jaya", "Manmatha", "Durmukha",
+    "Hemalamba", "Vilamba", "Vikari", "Sharvari", "Plava",
+    "Shubhakrit", "Shobhakrit", "Krodhi", "Vishvavasu", "Parabhava",
+    "Plavanga", "Kilaka", "Saumya", "Sadharana", "Virodhakrit",
+    "Paridhavi", "Pramadi", "Ananda", "Rakshasa", "Nala",
+    "Pingala", "Kalayukta", "Siddharthi", "Raudra", "Durmati",
+    "Dundubhi", "Rudhirodgari", "Raktaksha", "Krodhana", "Akshaya",
+)  # fmt: skip
+
 RITUS = ("Vasanta", "Grishma", "Varsha", "Sharad", "Hemanta", "Shishira")
