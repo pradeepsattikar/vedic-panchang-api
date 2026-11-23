@@ -18,6 +18,10 @@
 #
 # Fixed dates ([[fixed]]): month + day of the Gregorian calendar, e.g. a date set by a government.
 #
+# extended: true = left out of answers unless the request asks for it (?include_extended=true).
+#      Used for festivals not yet shown in the app (founder, 2026-11-23: no app change for now;
+#      the printed Toronto Panchang asks for them).
+#
 # short_name: label for tight spaces such as calendar cells (at most ~12 characters).
 #
 # Any change here MUST bump rule_version.
@@ -617,6 +621,7 @@ puja = ["parana"]
 
 [[lunar]]
 id = "parshuram-jayanti"
+extended = true
 name = "Parshuram Jayanti"
 short_name = "Parshuram"
 category = "major"
@@ -626,6 +631,7 @@ kala = "pradosh"
 
 [[lunar]]
 id = "sita-navami"
+extended = true
 name = "Sita Navami"
 short_name = "Sita Navami"
 category = "major"
@@ -637,6 +643,7 @@ puja = ["madhyahna_uncut"]  # Drik Toronto 2027-05-14: 11:46 AM-2:42 PM after Na
 
 [[lunar]]
 id = "narasimha-jayanti"
+extended = true
 name = "Narasimha Jayanti"
 short_name = "Narasimha"
 category = "major"
@@ -647,6 +654,7 @@ puja = ["sayankala", "madhyahna"]  # Drik: Sayana Kala puja, Madhyahna sankalp
 
 [[lunar]]
 id = "ganga-dussehra"
+extended = true
 name = "Ganga Dussehra"
 short_name = "Ganga Dush."
 category = "major"
@@ -657,6 +665,7 @@ kala = "sunrise"
 
 [[lunar]]
 id = "rath-yatra"
+extended = true
 name = "Jagannath Rath Yatra"
 short_name = "Rath Yatra"
 category = "major"
@@ -666,6 +675,7 @@ kala = "sunrise"
 
 [[lunar]]
 id = "kajari-teej"
+extended = true
 name = "Kajari Teej"
 short_name = "Kajari Teej"
 category = "major"
@@ -675,6 +685,7 @@ kala = "sunrise"
 
 [[lunar]]
 id = "rishi-panchami"
+extended = true
 name = "Rishi Panchami"
 short_name = "Rishi Panch."
 category = "major"
@@ -685,6 +696,7 @@ puja = ["madhyahna"]
 
 [[lunar]]
 id = "radha-ashtami"
+extended = true
 name = "Radha Ashtami"
 short_name = "Radha Ashtami"
 category = "major"
@@ -695,6 +707,7 @@ puja = ["madhyahna_uncut"]
 
 [[lunar]]
 id = "gopashtami"
+extended = true
 name = "Gopashtami"
 short_name = "Gopashtami"
 amanta_month = "kartika"
@@ -703,6 +716,7 @@ kala = "sunrise"
 
 [[lunar]]
 id = "akshaya-navami"
+extended = true
 name = "Akshaya Navami"
 short_name = "Akshaya Nav."
 amanta_month = "kartika"
@@ -712,6 +726,7 @@ puja = ["purvahna_tithi"]
 
 [[lunar]]
 id = "kansa-vadh"
+extended = true
 name = "Kansa Vadh"
 short_name = "Kansa Vadh"
 amanta_month = "kartika"
@@ -720,6 +735,7 @@ kala = "sunrise"
 
 [[lunar]]
 id = "bhishma-panchak"
+extended = true
 name = "Bhishma Panchak begins"
 short_name = "Bhishma Pan."
 amanta_month = "kartika"
@@ -729,6 +745,7 @@ ekadashi_day = true  # begins on Prabodhini Ekadashi (Drik Delhi 2025-11-01)
 
 [[lunar]]
 id = "tulsi-vivah"
+extended = true
 name = "Tulsi Vivah"
 short_name = "Tulsi Vivah"
 category = "major"
@@ -738,6 +755,7 @@ kala = "sunrise"  # Drik Delhi 2027-11-11 (Dwadashi at sunrise)
 
 [[lunar]]
 id = "vaikuntha-chaturdashi"
+extended = true
 name = "Vaikuntha Chaturdashi"
 short_name = "Vaikuntha Ch."
 category = "major"
@@ -822,6 +840,7 @@ sign = "any"
 
 [[solar]]
 id = "lohri"
+extended = true
 name = "Lohri"
 short_name = "Lohri"
 category = "major"
@@ -830,6 +849,7 @@ day_offset = -1  # the evening before Makar Sankranti
 
 [[solar]]
 id = "baisakhi"
+extended = true
 name = "Baisakhi"
 short_name = "Baisakhi"
 category = "major"
@@ -839,6 +859,7 @@ day_rule = "civil"  # Drik Delhi 2025-04-14 (ingress 3:30 AM); Drik Toronto 2026
 
 [[solar]]
 id = "vishwakarma-puja"
+extended = true
 name = "Vishwakarma Puja"
 short_name = "Vishwakarma"
 category = "major"
@@ -853,6 +874,7 @@ day_rule = "civil"  # Drik Toronto 2026-09-16 (ingress 10:28 PM), Delhi 2025-09-
 
 [[fixed]]
 id = "shiv-jayanti"
+extended = true
 name = "Shiv Jayanti (official date)"  # Maharashtra Government date, from historical records
 short_name = "Shiv Jayanti"
 category = "observance"
@@ -861,6 +883,7 @@ day = 19
 
 [[lunar]]
 id = "shiv-jayanti-tithi"
+extended = true
 name = "Shiv Jayanti (by Tithi)"  # traditional Hindu calendar date of his birth
 short_name = "Shiv J. Tithi"
 category = "observance"
@@ -873,6 +896,7 @@ kala = "sunrise"
 
 [[lunar]]
 id = "sheetala-ashtami"
+extended = true
 name = "Sheetala Ashtami (Basoda)"
 short_name = "Sheetala Ash."
 amanta_month = "phalguna"
@@ -881,6 +905,7 @@ kala = "sunrise"
 
 [[lunar]]
 id = "vat-purnima"
+extended = true
 name = "Vat Purnima"
 short_name = "Vat Purnima"
 amanta_month = "jyeshtha"
@@ -889,6 +914,7 @@ kala = "sunrise"
 
 [[lunar]]
 id = "randhan-chhath"
+extended = true
 name = "Randhan Chhath"
 short_name = "Randhan Chh."
 amanta_month = "shravana"
@@ -897,6 +923,7 @@ kala = "sunrise"
 
 [[lunar]]
 id = "shitala-satam"
+extended = true
 name = "Shitala Satam"
 short_name = "Shitala Satam"
 amanta_month = "shravana"
@@ -905,6 +932,7 @@ kala = "sunrise"
 
 [[lunar]]
 id = "pola"
+extended = true
 name = "Pola (Bail Pola)"
 short_name = "Pola"
 amanta_month = "shravana"
@@ -913,6 +941,7 @@ kala = "sunrise"
 
 [[lunar]]
 id = "jivitputrika"
+extended = true
 name = "Jivitputrika Vrat (Jitiya)"
 short_name = "Jitiya"
 amanta_month = "bhadrapada"
@@ -921,6 +950,7 @@ kala = "sunrise"
 
 [[lunar]]
 id = "maha-shashthi"
+extended = true
 name = "Durga Puja · Maha Shashthi"
 short_name = "Maha Shashthi"
 amanta_month = "ashwin"
@@ -929,6 +959,7 @@ kala = "sunrise"
 
 [[lunar]]
 id = "maha-saptami"
+extended = true
 name = "Durga Puja · Maha Saptami"
 short_name = "Maha Saptami"
 amanta_month = "ashwin"
@@ -937,6 +968,7 @@ kala = "sunrise"
 
 [[lunar]]
 id = "kali-puja"
+extended = true
 name = "Kali Puja"
 short_name = "Kali Puja"
 category = "major"
@@ -947,6 +979,7 @@ puja = ["nishita"]
 
 [[lunar]]
 id = "labh-pancham"
+extended = true
 name = "Labh Pancham"
 short_name = "Labh Pancham"
 amanta_month = "kartika"
@@ -955,6 +988,7 @@ kala = "sunrise"
 
 [[lunar]]
 id = "skanda-sashti"
+extended = true
 name = "Skanda Sashti (Soorasamharam)"
 short_name = "Skanda Sashti"
 amanta_month = "kartika"
@@ -964,6 +998,7 @@ tie = "first"
 
 [[lunar]]
 id = "jalaram-jayanti"
+extended = true
 name = "Jalaram Jayanti"
 short_name = "Jalaram Jay."
 amanta_month = "kartika"

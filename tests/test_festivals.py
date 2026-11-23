@@ -112,7 +112,7 @@ def test_occurrence_ids_are_stable_across_places(festivals):
 
 def test_daily_response_lists_observances(daily):
     observances = daily("2026-11-08", **DELHI)["observances"]
-    assert {o["festival_id"] for o in observances} == {"diwali", "naraka-chaturdashi", "kali-puja"}
+    assert {o["festival_id"] for o in observances} == {"diwali", "naraka-chaturdashi"}
     assert observances[0]["category"] == "major"
     # Amavasya begins 11:28 on Nov 8, so it prevails at sunrise only on Nov 9.
     next_day = daily("2026-11-09", **DELHI)["observances"]
@@ -171,7 +171,8 @@ def test_shiv_jayanti_official_date_and_tithi(client):
     # Phalguna Krishna Tritiya at sunrise: Pune 6 Mar 2026 (Tritiya 5 Mar 17:04 - 6 Mar 17:53 IST),
     # Toronto 5 Mar 2026 (Tritiya begins 06:34 EST, before sunrise).
     def dates(city_id, year):
-        body = client.get("/v1/festivals", params={"city_id": city_id, "year": year}).json()
+        params = {"city_id": city_id, "year": year, "include_extended": "true"}
+        body = client.get("/v1/festivals", params=params).json()
         return {
             f["festival_id"]: f["date"]
             for f in body["festivals"]
@@ -192,7 +193,8 @@ def test_shiv_jayanti_official_date_and_tithi(client):
 def test_gta_regional_festivals_2026(client):
     # Rules added 2026-11-23 for the printed Toronto Panchang; dates from the API, to be checked
     # against Drik / regional calendars before print. Guards against accidental rule changes.
-    body = client.get("/v1/festivals", params={"city_id": "1261481", "year": 2026}).json()
+    params = {"city_id": "1261481", "year": 2026, "include_extended": "true"}
+    body = client.get("/v1/festivals", params=params).json()
     got = {f["festival_id"]: f["date"] for f in body["festivals"]}
     assert got["sheetala-ashtami"] == "2026-03-11"
     assert got["vat-purnima"] == "2026-06-29"
@@ -200,3 +202,30 @@ def test_gta_regional_festivals_2026(client):
     assert got["kali-puja"] == "2026-11-08"
     assert got["labh-pancham"] == "2026-11-14"
     assert got["jalaram-jayanti"] == "2026-11-16"
+
+
+def test_extended_festivals_only_on_request(client, daily):
+    # Founder 2026-11-23: festivals not yet in the app stay out of the default answers.
+    city = {"city_id": "1261481"}
+    default = client.get("/v1/festivals", params={**city, "year": 2026}).json()["festivals"]
+    extended = client.get(
+        "/v1/festivals", params={**city, "year": 2026, "include_extended": "true"}
+    ).json()["festivals"]
+    assert not any(f["extended"] for f in default)
+    assert {"kali-puja", "tulsi-vivah", "shiv-jayanti"} <= {f["festival_id"] for f in extended}
+    # daily and month follow the same switch
+    ids = {o["festival_id"] for o in daily("2026-11-08", **city)["observances"]}
+    assert "kali-puja" not in ids
+    ids = {
+        o["festival_id"]
+        for o in daily("2026-11-08", **city, include_extended="true")["observances"]
+    }
+    assert "kali-puja" in ids
+    month = client.get(
+        "/v1/panchang/month",
+        params={**city, "year": 2026, "month": 11, "include_extended": "true"},
+    ).json()
+    assert any(o["festival_id"] == "kali-puja" for d in month["days"] for o in d["observances"])
+    # asking for one festival by id always answers
+    one = client.get("/v1/festivals/kali-puja", params={**city, "year": 2026})
+    assert one.status_code == 200 and one.json()["festivals"][0]["date"] == "2026-11-08"

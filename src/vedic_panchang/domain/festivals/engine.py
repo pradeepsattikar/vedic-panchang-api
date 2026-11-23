@@ -72,6 +72,7 @@ class FestivalOccurrence:
     sankranti_time: datetime | None = None  # solar rules
     puja_times: tuple[PujaTime, ...] = ()
     sade_teen_muhurat: str | None = None  # "full" or "half" on the 3 1/2 auspicious days
+    extended: bool = False  # listed only when the request asks for extended festivals
 
 
 def _matches(rule: LunarRule, inst: TithiInstance) -> bool:
@@ -203,6 +204,7 @@ def _lunar_occurrences(rule, instances, frames, profile) -> list[FestivalOccurre
                 tithi=_tithi_span(inst, frames),
                 masa=inst.months,
                 sade_teen_muhurat=rule.sade_teen_muhurat,
+                extended=rule.extended,
                 puja_times=_puja_times(
                     rule.puja,
                     frames,
@@ -240,6 +242,7 @@ def _solar_occurrences(rule: SolarRule, events: tuple[Sankranti, ...], frames: D
                 kala=None,
                 sankranti_time=from_jd(event.jd, frames.tz),
                 puja_times=_puja_times(rule.puja, frames, ayanamsha, day, sankranti_jd=event.jd),
+                extended=rule.extended,
             )
         )
     return result
@@ -272,6 +275,7 @@ def festivals_for_year(
                 category=rule.category,
                 date=date(year, rule.month, rule.day),
                 kala=None,
+                extended=rule.extended,
             )
         )
 

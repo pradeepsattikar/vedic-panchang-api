@@ -72,7 +72,8 @@ def dates_by_year(client):
 
     def fetch(city: str, year: int) -> dict[str, list[dict]]:
         if (city, year) not in cache:
-            response = client.get("/v1/festivals", params={"city_id": CITIES[city], "year": year})
+            params = {"city_id": CITIES[city], "year": year, "include_extended": "true"}
+            response = client.get("/v1/festivals", params=params)
             assert response.status_code == 200, response.text
             found: dict[str, list[dict]] = {}
             for item in response.json()["festivals"]:

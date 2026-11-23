@@ -81,6 +81,7 @@ class LunarRule:
     puja: tuple[str, ...] = ()
     # One of the Sade Teen (3 1/2) Muhurat days: "full" or "half"; None otherwise.
     sade_teen_muhurat: str | None = None
+    extended: bool = False  # only listed when the request asks for extended festivals
     # Kept on the Smarta Ekadashi fast day (the fast moves a day earlier when Dwadashi ends
     # before the parana sunrise). True for rules with an Ekadashi parana, and Bhishma Panchak.
     ekadashi_day: bool = False
@@ -104,6 +105,7 @@ class SolarRule:
     # "sunset": a Sankranti after sunset is kept the next day (default). "civil": kept on the
     # local calendar date of the Sun's ingress, as Drik does for Vishwakarma Puja and Baisakhi.
     day_rule: str = "sunset"
+    extended: bool = False
 
 
 @dataclass(frozen=True)
@@ -116,6 +118,7 @@ class FixedRule:
     category: Category
     month: int  # 1-12
     day: int  # 1-31
+    extended: bool = False
 
 
 @dataclass(frozen=True)
@@ -156,6 +159,7 @@ def _lunar(raw: dict) -> LunarRule:
         avoid_bhadra=bool(raw.get("avoid_bhadra", False)),
         puja=tuple(raw.get("puja", ())),
         sade_teen_muhurat=_sade_teen(raw),
+        extended=bool(raw.get("extended", False)),
         ekadashi_day=bool(raw.get("ekadashi_day", "parana" in raw.get("puja", ()))),
     )
 
@@ -179,6 +183,7 @@ def _solar(raw: dict) -> SolarRule:
         day_offset=int(raw.get("day_offset", 0)),
         replaces_sankranti=bool(raw.get("replaces_sankranti", True)),
         day_rule=_day_rule(raw),
+        extended=bool(raw.get("extended", False)),
     )
 
 
@@ -199,6 +204,7 @@ def _fixed(raw: dict) -> FixedRule:
         category=Category(raw.get("category", "observance")),
         month=month,
         day=day,
+        extended=bool(raw.get("extended", False)),
     )
 
 
