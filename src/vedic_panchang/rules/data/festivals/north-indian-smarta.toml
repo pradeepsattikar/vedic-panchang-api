@@ -22,7 +22,7 @@
 #
 # Any change here MUST bump rule_version.
 
-rule_version = "2026.11.3"  # 2026-11-23: Shiv Jayanti on both dates; batch-1 festivals merged with main
+rule_version = "2026.11.4"  # 2026-11-23: GTA regional festivals (13), Shiv Jayanti on both dates
 
 # ── Major festivals ────────────────────────────────────────────────────────────
 
@@ -866,4 +866,106 @@ short_name = "Shiv J. Tithi"
 category = "observance"
 amanta_month = "phalguna"
 tithi = 18  # Krishna Tritiya (Purnimanta: Chaitra Krishna Tritiya)
+kala = "sunrise"
+
+# ── Regional festivals for GTA communities (founder, 2026-11-23; printed Toronto Panchang) ──
+# Kala is the Tithi at sunrise unless noted. To verify against Drik / regional calendars before print.
+
+[[lunar]]
+id = "sheetala-ashtami"
+name = "Sheetala Ashtami (Basoda)"
+short_name = "Sheetala Ash."
+amanta_month = "phalguna"
+tithi = 23  # Krishna Ashtami (Purnimanta: Chaitra Krishna Ashtami)
+kala = "sunrise"
+
+[[lunar]]
+id = "vat-purnima"
+name = "Vat Purnima"
+short_name = "Vat Purnima"
+amanta_month = "jyeshtha"
+tithi = 15  # Maharashtra, Gujarat, South: Jyeshtha Purnima (North keeps Vat Savitri on Amavasya)
+kala = "sunrise"
+
+[[lunar]]
+id = "randhan-chhath"
+name = "Randhan Chhath"
+short_name = "Randhan Chhath"
+amanta_month = "shravana"
+tithi = 21  # Gujarati Shravana Krishna Shashthi (Purnimanta: Bhadrapada Krishna)
+kala = "sunrise"
+
+[[lunar]]
+id = "shitala-satam"
+name = "Shitala Satam"
+short_name = "Shitala Satam"
+amanta_month = "shravana"
+tithi = 22  # Gujarati Shravana Krishna Saptami, usually the day before Janmashtami
+kala = "sunrise"
+
+[[lunar]]
+id = "pola"
+name = "Pola (Bail Pola)"
+short_name = "Pola"
+amanta_month = "shravana"
+tithi = 30  # Maharashtra: Shravana Amavasya (Amanta)
+kala = "sunrise"
+
+[[lunar]]
+id = "jivitputrika"
+name = "Jivitputrika Vrat (Jitiya)"
+short_name = "Jitiya"
+amanta_month = "bhadrapada"
+tithi = 23  # Ashwin Krishna Ashtami (Purnimanta); Bihar, Jharkhand, eastern UP
+kala = "sunrise"
+
+[[lunar]]
+id = "maha-shashthi"
+name = "Durga Puja · Maha Shashthi"
+short_name = "Maha Shashthi"
+amanta_month = "ashwin"
+tithi = 6
+kala = "sunrise"
+
+[[lunar]]
+id = "maha-saptami"
+name = "Durga Puja · Maha Saptami"
+short_name = "Maha Saptami"
+amanta_month = "ashwin"
+tithi = 7
+kala = "sunrise"
+
+[[lunar]]
+id = "kali-puja"
+name = "Kali Puja"
+short_name = "Kali Puja"
+category = "major"
+amanta_month = "ashwin"
+tithi = 30
+kala = "nishita"  # Amavasya at midnight; can fall a day before Lakshmi Puja (Pradosh)
+puja = ["nishita"]
+
+[[lunar]]
+id = "labh-pancham"
+name = "Labh Pancham"
+short_name = "Labh Pancham"
+amanta_month = "kartika"
+tithi = 5
+kala = "sunrise"
+
+[[lunar]]
+id = "skanda-sashti"
+name = "Skanda Sashti (Soorasamharam)"
+short_name = "Skanda Sashti"
+amanta_month = "kartika"
+tithi = 6
+kala = "sayankala"  # Drik: the day Panchami ends / Shashthi begins between sunrise and sunset
+tie = "first"
+
+[[lunar]]
+id = "jalaram-jayanti"
+name = "Jalaram Jayanti"
+short_name = "Jalaram Jay."
+amanta_month = "kartika"
+tithi = 7
 kala = "sunrise"

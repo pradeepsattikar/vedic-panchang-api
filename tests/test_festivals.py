@@ -187,3 +187,16 @@ def test_shiv_jayanti_official_date_and_tithi(client):
         "shiv-jayanti-tithi": "2026-03-05",
     }
     assert dates("1259229", 2025)["shiv-jayanti-tithi"] == "2025-03-17"
+
+
+def test_gta_regional_festivals_2026(client):
+    # Rules added 2026-11-23 for the printed Toronto Panchang; dates from the API, to be checked
+    # against Drik / regional calendars before print. Guards against accidental rule changes.
+    body = client.get("/v1/festivals", params={"city_id": "1261481", "year": 2026}).json()
+    got = {f["festival_id"]: f["date"] for f in body["festivals"]}
+    assert got["sheetala-ashtami"] == "2026-03-11"
+    assert got["vat-purnima"] == "2026-06-29"
+    assert got["shitala-satam"] == "2026-09-03"  # day before Janmashtami (4 Sep)
+    assert got["kali-puja"] == "2026-11-08"
+    assert got["labh-pancham"] == "2026-11-14"
+    assert got["jalaram-jayanti"] == "2026-11-16"
