@@ -31,6 +31,14 @@ def test_samvat_year_boundary(daily):
     assert daily("2026-12-25", **MUMBAI)["year"]["vikram_samvat"] == 2083  # Pausha, same year
 
 
+def test_january_still_in_margashirsha_is_the_old_year(daily):
+    # Amanta Margashirsha runs until the Amavasya of 2027-01-07 (Toronto): Samvat 2083 / Shaka 1948,
+    # like the rest of January, not 2084 / 1949.
+    for date in ("2027-01-01", "2027-01-07", "2027-01-08", "2027-01-31"):
+        year = daily(date, **TORONTO)["year"]
+        assert (year["vikram_samvat"], year["shaka_samvat"]) == (2083, 1948), date
+
+
 def test_ritu_follows_the_lunar_month(daily):
     assert daily("2026-04-10", **MUMBAI)["year"]["ritu"] == "Vasanta"  # Chaitra
     assert daily("2026-01-15", **MUMBAI)["year"]["ritu"] == "Hemanta"  # Pausha

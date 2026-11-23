@@ -358,7 +358,7 @@ short_name = "Dev Deepawali"
 category = "major"
 amanta_month = "kartika"
 tithi = 15
-kala = "sunrise"
+kala = "pradosh"  # lamps at dusk: Purnima must prevail in Pradosh (Drik Toronto 2026: Nov 23, Varanasi: Nov 24)
 puja = ["dev_deepawali"]
 
 [[lunar]]
