@@ -26,7 +26,7 @@
 #
 # Any change here MUST bump rule_version.
 
-rule_version = "2026.11.4"  # 2026-11-23: GTA regional festivals (13), Shiv Jayanti on both dates
+rule_version = "2026.11.5"  # 2026-11-23: Bhogi, Thai Pongal, Mattu Pongal, Uttarayan (Makar Sankranti day -1/0/+1)
 
 # ── Major festivals ────────────────────────────────────────────────────────────
 
@@ -846,6 +846,43 @@ short_name = "Lohri"
 category = "major"
 sign = "makara"
 day_offset = -1  # the evening before Makar Sankranti
+
+# Festivals on the Makar Sankranti day or next to it (founder 2026-11-23: solar festivals that need
+# no further calculation). Same day rule as Makar Sankranti (after sunset -> next day).
+# Drik Toronto 2027: Bhogi 13 Jan, Pongal and Uttarayana 14 Jan, Mattu Pongal 15 Jan.
+[[solar]]
+id = "bhogi"
+extended = true
+name = "Bhogi"
+short_name = "Bhogi"
+category = "observance"
+sign = "makara"
+day_offset = -1  # the day before Thai Pongal
+
+[[solar]]
+id = "thai-pongal"
+extended = true
+name = "Thai Pongal"
+short_name = "Thai Pongal"
+category = "major"
+sign = "makara"
+
+[[solar]]
+id = "mattu-pongal"
+extended = true
+name = "Mattu Pongal"
+short_name = "Mattu Pongal"
+category = "observance"
+sign = "makara"
+day_offset = 1
+
+[[solar]]
+id = "uttarayan"
+extended = true
+name = "Uttarayan (Kite festival)"
+short_name = "Uttarayan"
+category = "observance"
+sign = "makara"
 
 [[solar]]
 id = "baisakhi"

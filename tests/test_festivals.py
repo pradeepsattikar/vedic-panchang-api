@@ -97,7 +97,7 @@ def test_counts_per_year(festivals):
 
 def test_sankranti_after_sunset_moves_to_next_day(festivals):
     for f in festivals(2025, **DELHI):
-        if f["sankranti_time"] and f["festival_id"] != "lohri":  # Lohri is the eve
+        if f["sankranti_time"] and f["festival_id"] not in ("lohri", "bhogi"):  # the eve
             assert f["date"] >= f["sankranti_time"][:10]
 
 
