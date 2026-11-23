@@ -890,7 +890,7 @@ kala = "sunrise"
 [[lunar]]
 id = "randhan-chhath"
 name = "Randhan Chhath"
-short_name = "Randhan Chhath"
+short_name = "Randhan Chh."
 amanta_month = "shravana"
 tithi = 21  # Gujarati Shravana Krishna Shashthi (Purnimanta: Bhadrapada Krishna)
 kala = "sunrise"

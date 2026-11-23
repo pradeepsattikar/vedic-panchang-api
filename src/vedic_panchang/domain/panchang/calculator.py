@@ -262,8 +262,7 @@ class _Calculation:
 
     def year_info(self, amanta_month: int, sun_longitude: float) -> YearInfo:
         """The Samvat year turns at Chaitra Shukla Pratipada (the start of Amanta Chaitra):
-        January to April dates still in an Amanta month from Kartika to Phalguna belong to the
-        old year
+        January to April dates still in an Amanta month from Kartika to Phalguna belong to the old year
         (early January can still be Margashirsha, e.g. 2027-01-01..07)."""
         old_year = self.day.month <= 4 and amanta_month >= 8
         vikram = self.day.year + (56 if old_year else 57)

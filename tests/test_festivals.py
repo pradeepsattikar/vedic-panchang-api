@@ -112,7 +112,7 @@ def test_occurrence_ids_are_stable_across_places(festivals):
 
 def test_daily_response_lists_observances(daily):
     observances = daily("2026-11-08", **DELHI)["observances"]
-    assert {o["festival_id"] for o in observances} == {"diwali", "naraka-chaturdashi"}
+    assert {o["festival_id"] for o in observances} == {"diwali", "naraka-chaturdashi", "kali-puja"}
     assert observances[0]["category"] == "major"
     # Amavasya begins 11:28 on Nov 8, so it prevails at sunrise only on Nov 9.
     next_day = daily("2026-11-09", **DELHI)["observances"]
