@@ -26,7 +26,7 @@
 #
 # Any change here MUST bump rule_version.
 
-rule_version = "2026.11.5"  # 2026-11-23: Bhogi, Thai Pongal, Mattu Pongal, Uttarayan (Makar Sankranti day -1/0/+1)
+rule_version = "2026.11.6"  # 2026-11-28: Kalabhairav Jayanti + monthly Kalashtami (extended)
 
 # ── Major festivals ────────────────────────────────────────────────────────────
 
@@ -830,6 +830,20 @@ kala = "nishita"
 skip_months = ["magha"]  # that night is Maha Shivaratri
 puja = ["nishita"]
 
+# Kalashtami (added 2026-11-28, founder; extended until the app has an icon): Krishna Ashtami that
+# prevails during the night. Drik: "Ashtami should prevail at least for one Ghati after Pradosh",
+# otherwise the previous day. Pradosh + max coverage matches all 25 Drik New Delhi dates 2025-2026
+# (Nishita does not: Varanasi 2026 Kalabhairav would be Nov 30, Drik says Dec 1).
+[[lunar]]
+id = "kalashtami"
+extended = true
+name = "Kalashtami"
+short_name = "Kalashtami"
+amanta_month = "any"
+tithi = 23
+kala = "pradosh"
+skip_months = ["kartika"]  # that night is Kalabhairav Jayanti
+
 [[solar]]
 id = "sankranti"
 name = "{sign} Sankranti"
@@ -1041,3 +1055,13 @@ short_name = "Jalaram Jay."
 amanta_month = "kartika"
 tithi = 7
 kala = "sunrise"
+
+[[lunar]]
+id = "kalbhairav-jayanti"
+extended = true
+name = "Kalabhairav Jayanti"
+short_name = "Kalabhairav"
+category = "major"
+amanta_month = "kartika"  # Margashirsha Krishna Ashtami (Purnimanta)
+tithi = 23
+kala = "pradosh"  # same night rule as Kalashtami (Drik 2026: Toronto Nov 30, Varanasi Dec 1)

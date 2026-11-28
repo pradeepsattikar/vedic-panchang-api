@@ -166,6 +166,42 @@ def test_dev_deepawali_follows_purnima_at_pradosh(festivals, city_id, year, expe
     assert dates["kartik-purnima"] == expected
 
 
+# Kalabhairav Jayanti and monthly Kalashtami (extended, added 2026-11-28): Krishna Ashtami must
+# prevail at night (Pradosh), not at sunrise. Drik Panchang dates, checked Nov 28, 2026.
+KALBHAIRAV_DRIK = [
+    ("6167865", 2026, "2026-11-30"),  # Toronto
+    ("1253405", 2026, "2026-12-01"),  # Varanasi: Nishita would give Nov 30
+    ("1273294", 2026, "2026-12-01"),  # New Delhi
+    ("1273294", 2025, "2025-11-12"),  # New Delhi: Ashtami begins 11:08 PM on Nov 11
+]
+
+# Drik "Masik Kalashtami" New Delhi lists 2025 and 2026 (Kalabhairav Jayanti nights included).
+KALASHTAMI_DELHI_DRIK = {
+    2025: ["01-21", "02-20", "03-22", "04-20", "05-20", "06-18", "07-17", "08-16", "09-14", "10-13",
+           "11-12", "12-11"],
+    2026: ["01-10", "02-09", "03-11", "04-10", "05-09", "06-08", "07-07", "08-05", "09-04", "10-03",
+           "11-01", "12-01", "12-30"],  # 06-08 is the Adhika Jyeshtha Kalashtami
+}
+
+
+@pytest.mark.parametrize(("city_id", "year", "expected"), KALBHAIRAV_DRIK)
+def test_kalbhairav_jayanti_follows_ashtami_at_night(festivals, city_id, year, expected):
+    dates = {f["festival_id"]: f["date"] for f in festivals(year, city_id=city_id, include_extended="true")}
+    assert dates["kalbhairav-jayanti"] == expected
+
+
+@pytest.mark.parametrize("year", sorted(KALASHTAMI_DELHI_DRIK))
+def test_kalashtami_matches_drik_new_delhi(festivals, year):
+    got = sorted(f["date"][5:] for f in festivals(year, city_id="1273294", include_extended="true")
+                 if f["festival_id"] in ("kalashtami", "kalbhairav-jayanti"))
+    assert got == KALASHTAMI_DELHI_DRIK[year]
+
+
+def test_kalashtami_hidden_from_default_answer(festivals):
+    ids = {f["festival_id"] for f in festivals(2026, city_id="6167865")}
+    assert not ids & {"kalashtami", "kalbhairav-jayanti"}
+
+
 def test_shiv_jayanti_official_date_and_tithi(client):
     # Official (Maharashtra Government) date is fixed at 19 February; the Tithi date is
     # Phalguna Krishna Tritiya at sunrise: Pune 6 Mar 2026 (Tritiya 5 Mar 17:04 - 6 Mar 17:53 IST),
