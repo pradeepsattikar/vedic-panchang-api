@@ -197,6 +197,17 @@ def test_kalashtami_matches_drik_new_delhi(festivals, year):
     assert got == KALASHTAMI_DELHI_DRIK[year]
 
 
+def test_kalbhairav_jayanti_nishita_puja_time(festivals):
+    # 8th of the 15 night muhurtas (sunset to next sunrise), while Ashtami prevails.
+    # Toronto 2026: 11:37 PM - 12:36 AM. In India 2026 Ashtami ends 11:13 PM, before Nishita: no time.
+    def puja(city_id):
+        f = [x for x in festivals(2026, city_id=city_id, include_extended="true")
+             if x["festival_id"] == "kalbhairav-jayanti"][0]
+        return [(p["start"][11:16], p["end"][11:16]) for p in f["puja_times"]]
+    assert puja("6167865") == [("23:37", "00:36")]
+    assert puja("1253405") == []
+
+
 def test_kalashtami_hidden_from_default_answer(festivals):
     ids = {f["festival_id"] for f in festivals(2026, city_id="6167865")}
     assert not ids & {"kalashtami", "kalbhairav-jayanti"}

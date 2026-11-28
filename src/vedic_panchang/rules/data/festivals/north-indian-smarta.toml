@@ -26,7 +26,7 @@
 #
 # Any change here MUST bump rule_version.
 
-rule_version = "2026.11.6"  # 2026-11-28: Kalabhairav Jayanti + monthly Kalashtami (extended)
+rule_version = "2026.11.7"  # 2026-11-28: Kalabhairav Jayanti Nishita puja time
 
 # ── Major festivals ────────────────────────────────────────────────────────────
 
@@ -1065,3 +1065,4 @@ category = "major"
 amanta_month = "kartika"  # Margashirsha Krishna Ashtami (Purnimanta)
 tithi = 23
 kala = "pradosh"  # same night rule as Kalashtami (Drik 2026: Toronto Nov 30, Varanasi Dec 1)
+puja = ["nishita"]  # 8th of 15 night muhurtas while Ashtami prevails (Toronto 2026: 11:37 PM-12:36 AM)
